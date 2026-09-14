@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+/* ── WEJI design tokens ─────────────────────────────────────────────────────
+   Dark cinematic with a single warm-gold glow. Photos read far better against
+   near-black, and the 3D scene only looks premium with real darkness behind it.
+   ------------------------------------------------------------------------- */
+@theme {
+  --color-ink: #07070a;
+  --color-ink-2: #0c0c12;
+  --color-panel: #12121a;
+  --color-line: #ffffff14;
+  --color-line-strong: #ffffff26;
+  --color-fg: #f5f5f8;
+  --color-muted: #9a9aab;
+  --color-faint: #6a6a7a;
+  --color-gold: #ffc24b;
+  --color-gold-deep: #ff9e2c;
+
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+html {
+  background: var(--color-ink);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  margin: 0;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Arabic gets its own face; Inter has no Arabic coverage worth using. */
+html[dir="rtl"] body {
+  font-family: var(--font-arabic);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #000;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Scrollbar — the default light one breaks the cinematic feel. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a36 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a2a36;
+  border-radius: 99px;
+  border: 3px solid var(--color-ink);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #3a3a48;
+}
+
+/* ── 3D scene primitives ───────────────────────────────────────────────── */
+.scene-3d {
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* The ring is a *3D* object, so RTL must not mirror it — only the text around
+   it flips. Without this the carousel spins the wrong way in Arabic. */
+.ring-3d {
+  direction: ltr;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Glow ──────────────────────────────────────────────────────────────── */
+.glow-gold {
+  box-shadow:
+    0 0 0 1px #ffc24b33,
+    0 0 24px -4px #ffc24b55,
+    0 0 70px -12px #ff9e2c44;
+}
+
+.text-glow {
+  text-shadow: 0 0 34px #ffc24b4d;
+}
+
+/* ── Masonry grid ──────────────────────────────────────────────────────────
+   CSS columns rather than a JS masonry library: it reflows for free on resize,
+   works identically in RTL, and costs nothing on the main thread. */
+.masonry {
+  column-gap: 1rem;
+  columns: 2;
+}
+@media (min-width: 640px) {
+  .masonry { columns: 3; }
+}
+@media (min-width: 1024px) {
+  .masonry { columns: 4; }
+}
+@media (min-width: 1536px) {
+  .masonry { columns: 5; }
+}
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* ── Animation ─────────────────────────────────────────────────────────── */
+@keyframes weji-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up {
+  animation: weji-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes weji-breathe {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+.breathe {
+  animation: weji-breathe 5s ease-in-out infinite;
+}
+
+@keyframes weji-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.shimmer {
+  background-image: linear-gradient(90deg, #14141c 25%, #1d1d28 50%, #14141c 75%);
+  background-size: 200% 100%;
+  animation: weji-shimmer 1.6s linear infinite;
+}
+
+/* Honour the OS "reduce motion" setting — the spinning ring is exactly the
+   kind of thing that triggers motion sickness. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
