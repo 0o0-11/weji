@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLibrary } from "@/lib/library/LibraryProvider";
 import type { WejiImage } from "@/lib/search/types";
 
 /**
@@ -13,6 +14,7 @@ export default function ImageCard({ image, onSelect }: { image: WejiImage; onSel
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const { isLiked, toggleLike } = useLibrary();
 
   // Server-rendered images are often already decoded by the time React hydrates
   // and attaches onLoad, so that event never fires and the picture would stay
@@ -30,15 +32,22 @@ export default function ImageCard({ image, onSelect }: { image: WejiImage; onSel
 
   const ratio = image.width && image.height ? image.width / image.height : 3 / 4;
   const isNews = image.source === "news";
+  const liked = isLiked(image.id);
 
+  // The card is a wrapper rather than one big button: the heart is a second,
+  // separate control, and a button nested inside a button is invalid HTML that
+  // screen readers and keyboard users handle badly.
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(image)}
-      className="group relative block w-full overflow-hidden rounded-xl border border-line bg-panel text-start transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-[0_18px_50px_-18px_#000,0_0_30px_-10px_#ffc24b55]"
+    <div
+      className="group relative w-full overflow-hidden rounded-xl border border-line bg-panel transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-[0_18px_50px_-18px_#000,0_0_30px_-10px_#ffc24b55]"
       style={{ aspectRatio: String(ratio) }}
-      aria-label={image.alt || "Open picture"}
     >
+      <button
+        type="button"
+        onClick={() => onSelect(image)}
+        className="block h-full w-full text-start"
+        aria-label={image.alt || "Open picture"}
+      >
       {!loaded && <div className="shimmer absolute inset-0" />}
 
       <img
@@ -79,6 +88,21 @@ export default function ImageCard({ image, onSelect }: { image: WejiImage; onSel
           <p className="truncate text-xs text-white/85">{image.credit}</p>
         )}
       </div>
-    </button>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => void toggleLike(image)}
+        aria-label={image.alt ? `Like: ${image.alt}` : "Like"}
+        aria-pressed={liked}
+        className={`absolute end-2 top-2 h-9 w-9 place-items-center rounded-full border backdrop-blur transition ${
+          liked
+            ? "grid border-gold/60 bg-ink/85 text-gold"
+            : "hidden border-line-strong bg-ink/70 text-white/80 hover:border-gold/60 hover:text-gold group-hover:grid"
+        }`}
+      >
+        {liked ? "♥" : "♡"}
+      </button>
+    </div>
   );
 }

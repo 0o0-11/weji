@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cairo } from "next/font/google";
 import { LocaleProvider, LOCALE_BOOTSTRAP_SCRIPT } from "@/lib/i18n/LocaleProvider";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { LibraryProvider } from "@/lib/library/LibraryProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: LOCALE_BOOTSTRAP_SCRIPT }} />
       </head>
       <body>
-        <LocaleProvider>{children}</LocaleProvider>
+        <LocaleProvider>
+          <AuthProvider>
+            <LibraryProvider>{children}</LibraryProvider>
+          </AuthProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

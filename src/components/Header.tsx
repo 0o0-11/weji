@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {
@@ -35,6 +37,14 @@ export function LangSwitch() {
 
 export default function Header({ query = "", showSearch = true }: { query?: string; showSearch?: boolean }) {
   const { t } = useLocale();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/home");
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-xl">
@@ -56,13 +66,31 @@ export default function Header({ query = "", showSearch = true }: { query?: stri
           >
             {t.navHome}
           </Link>
-          <LangSwitch />
-          <span
-            title={t.soonBody}
-            className="hidden cursor-default rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-faint sm:block"
+          <Link
+            href="/collections"
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-muted transition hover:text-fg"
           >
-            {t.signIn}
-          </span>
+            {t.navCollections}
+          </Link>
+          <LangSwitch />
+
+          {user ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              title={user.email ?? undefined}
+              className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted transition hover:border-gold/50 hover:text-gold"
+            >
+              {t.signOut}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted transition hover:border-gold/50 hover:text-gold"
+            >
+              {t.signIn}
+            </Link>
+          )}
         </nav>
       </div>
     </header>

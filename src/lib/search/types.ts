@@ -9,6 +9,12 @@ export interface WejiImage {
   full: string;
   /** Highest available original, used for downloads. */
   download: string;
+  /**
+   * The provider's un-sized base URL. Wallpaper downloads are built from this
+   * by asking the provider's own CDN to render an exact size, so WEJI never has
+   * to resize an image itself.
+   */
+  raw: string;
   width: number;
   height: number;
   /** Average colour — painted behind the image so the grid never flashes white. */

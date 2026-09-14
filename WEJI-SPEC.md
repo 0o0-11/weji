@@ -27,15 +27,25 @@ pictures, with a 3D landing page and a 3D image viewer.
 
 ## Delivery plan
 
-**Phase 1 — the core (see it working)**
+**Phase 1 — the core — ✅ done**
 3D landing page · bilingual search with AR→EN translation · image grid · 3D image viewer ·
 news + wallpaper home feed · strict safety filter · full RTL/LTR
 
-**Phase 2 — the account**
+**Phase 2 — the account — ✅ done**
 Email + password sign-in · save to collections · download in wallpaper sizes · like · share
 
 **Phase 3 — personalisation + launch**
 Follow topics · personalised home feed · deploy live to Vercel
+
+### One design decision inside phase 2
+
+You chose "browse freely, sign in only to save". Taken literally that means a visitor who
+presses Save gets a wall before they have ever used the feature.
+
+Instead, saving and liking work **immediately, stored on the visitor's own device**, with a
+clear note saying so and an invitation to create an account. The moment they sign up,
+everything they already saved is lifted into their account automatically. They get to want the
+feature before being asked to pay for it in effort — and nothing they did is lost.
 
 ---
 

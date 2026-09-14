@@ -164,6 +164,7 @@ async function fetchFeed(feed: Feed): Promise<WejiImage[]> {
         thumb: image,
         full: image,
         download: image,
+        raw: image,
         // News images are overwhelmingly 16:9; the grid corrects itself once
         // the real image loads, this just prevents a layout jump before that.
         width: 1600,

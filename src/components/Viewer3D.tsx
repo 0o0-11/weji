@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useLibrary } from "@/lib/library/LibraryProvider";
+import DownloadMenu from "./DownloadMenu";
+import SaveMenu from "./SaveMenu";
 import type { WejiImage } from "@/lib/search/types";
 
 /**
@@ -19,6 +22,7 @@ const MAX_TILT = 9; // degrees
 
 export default function Viewer3D({ image, onClose }: Viewer3DProps) {
   const { t, dir } = useLocale();
+  const { isLiked, toggleLike } = useLibrary();
   const plateRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -86,6 +90,7 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
   if (!image) return null;
 
   const isNews = image.source === "news";
+  const liked = isLiked(image.id);
 
   return (
     <div
@@ -159,13 +164,13 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <ActionButton primary onClick={() => window.open(image.download, "_blank", "noopener")}>
-              ↓ {t.viewerDownload}
-            </ActionButton>
+            <DownloadMenu image={image} />
             <ActionButton onClick={handleShare}>⤴ {t.viewerShare}</ActionButton>
-            <ActionButton onClick={() => showToast(t.soonBody)}>♥ {t.viewerLike}</ActionButton>
-            <ActionButton onClick={() => showToast(t.soonBody)}>⊞ {t.viewerSave}</ActionButton>
-            {image.creditUrl && (
+            <ActionButton active={liked} onClick={() => void toggleLike(image)}>
+              {liked ? "♥" : "♡"} {liked ? t.viewerLiked : t.viewerLike}
+            </ActionButton>
+            <SaveMenu image={image} onSaved={() => showToast(t.savedToast)} />
+            {image.creditUrl && !isNews && (
               <a
                 href={image.creditUrl}
                 target="_blank"
@@ -191,19 +196,19 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
 function ActionButton({
   children,
   onClick,
-  primary,
+  active,
 }: {
   children: React.ReactNode;
   onClick: () => void;
-  primary?: boolean;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={
-        primary
-          ? "rounded-full bg-gold px-5 py-2 text-sm font-semibold text-ink transition hover:bg-gold-deep"
+        active
+          ? "rounded-full border border-gold/50 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold transition"
           : "rounded-full border border-line px-4 py-2 text-sm text-muted transition hover:border-gold/50 hover:text-gold"
       }
     >
