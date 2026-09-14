@@ -23,10 +23,35 @@ const ALLOWED_HOSTS = new Set([
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
+/**
+ * Unsplash requires a ping to the photo's `download_location` whenever a user
+ * downloads it, so photographers' download counts stay accurate. It is a
+ * condition of API access, not an optional courtesy.
+ *
+ * Fired without blocking the download, and only ever at api.unsplash.com.
+ */
+function pingUnsplashDownload(trackUrl: string | null): void {
+  const key = process.env.UNSPLASH_ACCESS_KEY;
+  if (!trackUrl || !key) return;
+
+  try {
+    const target = new URL(trackUrl);
+    if (target.protocol !== "https:" || target.hostname !== "api.unsplash.com") return;
+
+    void fetch(target.toString(), {
+      headers: { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" },
+    }).catch(() => undefined);
+  } catch {
+    // A malformed tracking URL must never break the download itself.
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const src = searchParams.get("src");
-  const name = (searchParams.get("name") ?? "weji-wallpaper.jpg").replace(/[^\w.\-؀-ۿ]/g, "_");
+  const name = (searchParams.get("name") ?? "weji-photo.jpg").replace(/[^\w.\-؀-ۿ]/g, "_");
+
+  pingUnsplashDownload(searchParams.get("track"));
 
   if (!src) {
     return NextResponse.json({ error: "missing_src" }, { status: 400 });

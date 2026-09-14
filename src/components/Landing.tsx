@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import Attribution from "./Attribution";
 import Hero3D from "./Hero3D";
 import SearchBar from "./SearchBar";
 import Viewer3D from "./Viewer3D";
@@ -126,7 +127,7 @@ export default function Landing({ images, demo }: { images: WejiImage[]; demo: b
             </p>
           )}
 
-          <p className="mt-10 text-center text-[11px] text-faint">{t.footerNote}</p>
+          <Attribution className="mt-10" />
         </section>
       </div>
 

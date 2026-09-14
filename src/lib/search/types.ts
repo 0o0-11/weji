@@ -22,8 +22,20 @@ export interface WejiImage {
   alt: string;
   /** Photographer, outlet, or author. */
   credit: string;
-  /** Link back to the source page — required by the Unsplash and Pexels licences. */
+  /**
+   * Link to the photographer's own profile. Unsplash and Pexels both *require*
+   * this, not merely the name in text.
+   */
   creditUrl: string;
+  /** The provider we must also name and link — "Unsplash", "Pexels", or an outlet. */
+  sourceName: string;
+  /** The picture's page on the provider's own site. */
+  sourceUrl: string;
+  /**
+   * Unsplash requires a ping to this URL whenever a user downloads a picture,
+   * so photographers' download counts stay accurate. Not a download URL itself.
+   */
+  downloadLocation?: string;
   /** Present only on news pictures. */
   publishedAt?: string;
   outlet?: string;

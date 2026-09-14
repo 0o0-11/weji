@@ -173,6 +173,8 @@ async function fetchFeed(feed: Feed): Promise<WejiImage[]> {
         alt: title,
         credit: feed.outlet,
         creditUrl: link,
+        sourceName: feed.outlet,
+        sourceUrl: link,
         outlet: feed.outlet,
         articleUrl: link,
         publishedAt: text(item.pubDate) || undefined,

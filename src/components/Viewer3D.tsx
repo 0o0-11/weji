@@ -157,8 +157,34 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
         {/* Caption + actions */}
         <div className="w-full max-w-3xl" dir={dir}>
           {image.alt && <p className="mb-1 text-balance text-center text-sm text-fg sm:text-base">{image.alt}</p>}
+
+          {/* Unsplash and Pexels both require the photographer AND the provider
+              to be named and linked, not just mentioned in text. */}
           <p className="mb-4 text-center text-xs text-faint">
-            {isNews ? image.outlet : `${t.viewerBy} ${image.credit}`}
+            {isNews ? (
+              image.outlet
+            ) : (
+              <>
+                {t.viewerBy}{" "}
+                <a
+                  href={image.creditUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted underline decoration-line-strong underline-offset-2 transition hover:text-gold"
+                >
+                  {image.credit}
+                </a>{" "}
+                {t.viewerOn}{" "}
+                <a
+                  href={image.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted underline decoration-line-strong underline-offset-2 transition hover:text-gold"
+                >
+                  {image.sourceName}
+                </a>
+              </>
+            )}
             <span className="mx-2 hidden sm:inline">·</span>
             <span className="hidden sm:inline">{t.viewerTiltHint}</span>
           </p>
@@ -170,14 +196,14 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
               {liked ? "♥" : "♡"} {liked ? t.viewerLiked : t.viewerLike}
             </ActionButton>
             <SaveMenu image={image} onSaved={() => showToast(t.savedToast)} />
-            {image.creditUrl && !isNews && (
+            {image.sourceUrl && !isNews && (
               <a
-                href={image.creditUrl}
+                href={image.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-line px-4 py-2 text-sm text-muted transition hover:border-gold/50 hover:text-gold"
               >
-                {isNews ? t.viewerOpenArticle : t.viewerSource} ↗
+                {t.viewerSource} ↗
               </a>
             )}
           </div>

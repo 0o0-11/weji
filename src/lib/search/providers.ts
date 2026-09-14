@@ -44,10 +44,18 @@ interface UnsplashPhoto {
   alt_description: string | null;
   description: string | null;
   urls: { raw: string; full: string; regular: string; small: string };
-  links: { html: string };
-  user: { name: string; links: { html: string } };
+  links: { html: string; download_location: string };
+  user: { name: string; username: string; links: { html: string } };
   tags?: { title: string }[];
 }
+
+/**
+ * Unsplash requires every link back to carry these, so they can attribute
+ * traffic to the app that sent it.
+ */
+const UNSPLASH_UTM = "utm_source=WEJI&utm_medium=referral";
+
+const withUtm = (url: string) => `${url}${url.includes("?") ? "&" : "?"}${UNSPLASH_UTM}`;
 
 function mapUnsplash(p: UnsplashPhoto): WejiImage {
   return {
@@ -62,7 +70,10 @@ function mapUnsplash(p: UnsplashPhoto): WejiImage {
     color: p.color ?? "#1a1a20",
     alt: p.alt_description ?? p.description ?? "",
     credit: p.user.name,
-    creditUrl: p.links.html,
+    creditUrl: withUtm(p.user.links.html),
+    sourceName: "Unsplash",
+    sourceUrl: withUtm(p.links.html),
+    downloadLocation: p.links.download_location,
   };
 }
 
@@ -125,6 +136,8 @@ function mapPexels(p: PexelsPhoto): WejiImage {
     alt: p.alt ?? "",
     credit: p.photographer,
     creditUrl: p.photographer_url,
+    sourceName: "Pexels",
+    sourceUrl: p.url,
   };
 }
 
@@ -176,6 +189,8 @@ export function demoImages(query: string, page: number, count: number): WejiImag
       alt: query ? `${query} — demo image` : "WEJI demo image",
       credit: "Demo mode",
       creditUrl: "https://picsum.photos",
+      sourceName: "Lorem Picsum",
+      sourceUrl: "https://picsum.photos",
     };
   });
 }

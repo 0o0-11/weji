@@ -48,11 +48,11 @@ export function buildSizedUrl(image: WejiImage, size: WallpaperSize): string | n
 
 /** A tidy, safe filename for the saved file. */
 export function buildFilename(image: WejiImage, size: WallpaperSize): string {
-  const slug = (image.alt || "weji-wallpaper")
+  const slug = (image.alt || "weji-photo")
     .toLowerCase()
     .replace(/[^a-z0-9؀-ۿ]+/gi, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 50) || "weji-wallpaper";
+    .slice(0, 50) || "weji-photo";
   return `weji-${slug}-${size}.jpg`;
 }
 
@@ -66,5 +66,11 @@ export function buildFilename(image: WejiImage, size: WallpaperSize): string {
 export function buildDownloadHref(image: WejiImage, size: WallpaperSize): string | null {
   const src = buildSizedUrl(image, size);
   if (!src) return null;
-  return `/api/download?src=${encodeURIComponent(src)}&name=${encodeURIComponent(buildFilename(image, size))}`;
+
+  const params = new URLSearchParams({ src, name: buildFilename(image, size) });
+  // Carried through so the server can register the download with Unsplash,
+  // which is a condition of their API terms.
+  if (image.downloadLocation) params.set("track", image.downloadLocation);
+
+  return `/api/download?${params.toString()}`;
 }

@@ -63,7 +63,8 @@ export const STRINGS = {
     viewerLiked: "Liked",
     viewerShare: "Share",
     viewerSource: "View original",
-    viewerBy: "by",
+    viewerBy: "Photo by",
+    viewerOn: "on",
     viewerTiltHint: "Move your mouse to tilt",
     viewerOpenArticle: "Read the story",
     copied: "Link copied",
@@ -120,7 +121,9 @@ export const STRINGS = {
     demoBadge: "Demo mode",
     demoBody: "Showing placeholder pictures. Add your free Unsplash and Pexels keys to see real photos.",
 
-    footerNote: "Photos by Unsplash and Pexels. News pictures belong to their publishers.",
+    footerPhotosBy: "Photos provided by",
+    footerAnd: "and",
+    footerNewsNote: "News pictures belong to their publishers.",
   },
 
   ar: {
@@ -179,6 +182,7 @@ export const STRINGS = {
     viewerShare: "مشاركة",
     viewerSource: "المصدر الأصلي",
     viewerBy: "بعدسة",
+    viewerOn: "على",
     viewerTiltHint: "حرّك المؤشر لإمالة الصورة",
     viewerOpenArticle: "اقرأ الخبر",
     copied: "تم نسخ الرابط",
@@ -234,7 +238,9 @@ export const STRINGS = {
     demoBadge: "وضع العرض",
     demoBody: "هذه صور تجريبية. أضف مفاتيح Unsplash و Pexels المجانية لعرض الصور الحقيقية.",
 
-    footerNote: "الصور من Unsplash و Pexels. صور الأخبار ملك لناشريها.",
+    footerPhotosBy: "الصور مقدمة من",
+    footerAnd: "و",
+    footerNewsNote: "صور الأخبار ملك لناشريها.",
   },
 } as const;
 

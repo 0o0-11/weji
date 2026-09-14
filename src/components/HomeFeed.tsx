@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import Attribution from "./Attribution";
 import Header from "./Header";
 import MasonryGrid from "./MasonryGrid";
 import Viewer3D from "./Viewer3D";
@@ -71,7 +72,7 @@ export default function HomeFeed({
           </section>
         )}
 
-        <p className="mt-16 text-center text-[11px] text-faint">{t.footerNote}</p>
+        <Attribution className="mt-16" />
       </main>
 
       <Viewer3D image={active} onClose={() => setActive(null)} />
