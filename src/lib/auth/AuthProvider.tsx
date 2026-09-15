@@ -28,7 +28,13 @@ const AuthContext = createContext<AuthValue | null>(null);
 /** Turns Supabase's error text into something a normal person can act on. */
 function friendlyError(message: string): string {
   const text = message.toLowerCase();
-  if (text.includes("invalid login credentials")) return "That email and password don't match.";
+  // Supabase returns "invalid login credentials" both for a genuinely wrong
+  // password and for an account that exists but hasn't confirmed its email.
+  // Saying only "wrong password" sends people hunting for a mistake they
+  // didn't make, so name both causes.
+  if (text.includes("invalid login credentials")) {
+    return "That email and password don't match — or the account hasn't been confirmed yet. Check your inbox for the confirmation link.";
+  }
   if (text.includes("already registered")) return "That email already has an account. Try signing in.";
   if (text.includes("password should be")) return "Please use a password of at least 6 characters.";
   if (text.includes("email not confirmed")) return "Please confirm your email first — check your inbox.";

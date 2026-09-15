@@ -72,6 +72,19 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
           </h1>
           <p className="mt-2 text-center text-sm text-faint">{isSignUp ? t.signUpBody : t.signInBody}</p>
 
+          {/* People reliably land on the wrong one of these two pages, so make
+              the way across obvious before they fill anything in, not only in
+              the small print underneath. */}
+          <p className="mt-4 text-center text-xs text-muted">
+            {isSignUp ? t.haveAccount : t.noAccount}{" "}
+            <Link
+              href={isSignUp ? "/login" : "/signup"}
+              className="font-semibold text-gold underline decoration-gold/40 underline-offset-4"
+            >
+              {isSignUp ? t.signIn : t.signUp}
+            </Link>
+          </p>
+
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <Field
               label={t.email}

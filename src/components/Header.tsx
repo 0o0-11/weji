@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import SearchBar from "./SearchBar";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -37,14 +36,7 @@ export function LangSwitch() {
 
 export default function Header({ query = "", showSearch = true }: { query?: string; showSearch?: boolean }) {
   const { t } = useLocale();
-  const { user, signOut } = useAuth();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/home");
-    router.refresh();
-  };
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-xl">
@@ -75,14 +67,16 @@ export default function Header({ query = "", showSearch = true }: { query?: stri
           <LangSwitch />
 
           {user ? (
-            <button
-              type="button"
-              onClick={handleSignOut}
-              title={user.email ?? undefined}
-              className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-muted transition hover:border-gold/50 hover:text-gold"
+            // The avatar is the way in to the account page. A bare "Sign out"
+            // gives a signed-in person nowhere to go and nothing to look at.
+            <Link
+              href="/account"
+              title={user.email ?? t.navAccount}
+              aria-label={`${t.navAccount}: ${user.email ?? ""}`}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-xs font-bold text-gold transition hover:border-gold hover:bg-gold/20"
             >
-              {t.signOut}
-            </button>
+              {(user.email ?? "?").charAt(0).toUpperCase()}
+            </Link>
           ) : (
             <Link
               href="/login"

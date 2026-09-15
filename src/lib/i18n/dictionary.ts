@@ -47,6 +47,22 @@ export const STRINGS = {
     signOut: "Sign out",
     langLabel: "عربي",
 
+    // ── Account ──────────────────────────────────────────────────────────
+    navAccount: "Account",
+    accountTitle: "Your account",
+    signedInAs: "Signed in as",
+    memberSince: "Member since",
+    statCollections: "Collections",
+    statSaved: "Pictures saved",
+    statLiked: "Liked",
+    statTopics: "Topics followed",
+    accountLanguage: "Interface language",
+    accountNotSignedIn: "You’re not signed in",
+    accountNotSignedInBody:
+      "WEJI works without an account — anything you save is kept on this device. Sign in to reach it from anywhere.",
+    accountGuestNote:
+      "These are saved on this device only. Create an account and they move with you automatically.",
+
     // ── Home ─────────────────────────────────────────────────────────────
     newsHeading: "In the news right now",
     newsSub: "Pictures from the stories people are reading today",
@@ -169,6 +185,22 @@ export const STRINGS = {
     signUp: "إنشاء حساب",
     signOut: "تسجيل الخروج",
     langLabel: "English",
+
+    // ── الحساب ───────────────────────────────────────────────────────────
+    navAccount: "حسابي",
+    accountTitle: "حسابك",
+    signedInAs: "مسجّل الدخول باسم",
+    memberSince: "عضو منذ",
+    statCollections: "المجموعات",
+    statSaved: "صور محفوظة",
+    statLiked: "أعجبتني",
+    statTopics: "مواضيع متابَعة",
+    accountLanguage: "لغة الواجهة",
+    accountNotSignedIn: "لم تسجّل الدخول",
+    accountNotSignedInBody:
+      "ويجي يعمل بدون حساب — كل ما تحفظه محفوظ على هذا الجهاز. سجّل الدخول للوصول إليه من أي مكان.",
+    accountGuestNote:
+      "هذه محفوظة على هذا الجهاز فقط. أنشئ حساباً وستنتقل معك تلقائياً.",
 
     // ── الصفحة الرئيسية ──────────────────────────────────────────────────
     newsHeading: "الأخبار الآن",
