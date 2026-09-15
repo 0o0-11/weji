@@ -2,7 +2,7 @@ import HomeFeed from "@/components/HomeFeed";
 import { getNewsImages } from "@/lib/news/rss";
 import { curatedPexels, demoImages, hasKeys, interleave, popularUnsplash } from "@/lib/search/providers";
 
-// News moves; wallpapers don't. Fifteen minutes keeps the front page current
+// News moves; popular photographs don't. Fifteen minutes keeps the page current
 // without re-reading the publishers' feeds on every visit.
 export const revalidate = 900;
 

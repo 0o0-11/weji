@@ -18,13 +18,13 @@ export const STRINGS = {
     heroTitle: "Every picture,",
     heroTitleAccent: "one search away",
     heroBody:
-      "Millions of photos, wallpapers and news pictures — searchable in English and Arabic. Free to browse, no account needed.",
+      "Millions of photos and news pictures — searchable in English and Arabic. Free to browse, no account needed.",
     heroCta: "Start exploring",
-    heroSecondary: "See what’s trending",
+    heroSecondary: "See what’s popular",
     heroHint: "Drag to spin · click any picture",
 
     // ── Search ───────────────────────────────────────────────────────────
-    searchPlaceholder: "Search photos, wallpapers, news…",
+    searchPlaceholder: "Search photos, news, anything…",
     searchAction: "Search",
     clear: "Clear",
     resultsFor: "Results for",
@@ -50,7 +50,7 @@ export const STRINGS = {
     // ── Home ─────────────────────────────────────────────────────────────
     newsHeading: "In the news right now",
     newsSub: "Pictures from the stories people are reading today",
-    trendingHeading: "Trending wallpapers",
+    trendingHeading: "Popular photographs",
     trendingSub: "The most-loved pictures on the internet this week",
     browseHeading: "Browse by topic",
 
@@ -136,13 +136,13 @@ export const STRINGS = {
     heroTitle: "كل الصور،",
     heroTitleAccent: "على بُعد بحث واحد",
     heroBody:
-      "ملايين الصور والخلفيات وصور الأخبار — ابحث بالعربية أو الإنجليزية. التصفح مجاني بلا حساب.",
+      "ملايين الصور وصور الأخبار — ابحث بالعربية أو الإنجليزية. التصفح مجاني بلا حساب.",
     heroCta: "ابدأ الاستكشاف",
     heroSecondary: "شاهد الأكثر رواجاً",
     heroHint: "اسحب للتدوير · اضغط على أي صورة",
 
     // ── البحث ────────────────────────────────────────────────────────────
-    searchPlaceholder: "ابحث عن صور، خلفيات، أخبار…",
+    searchPlaceholder: "ابحث عن صور، أخبار، أي شيء…",
     searchAction: "بحث",
     clear: "مسح",
     resultsFor: "نتائج",
@@ -168,7 +168,7 @@ export const STRINGS = {
     // ── الصفحة الرئيسية ──────────────────────────────────────────────────
     newsHeading: "الأخبار الآن",
     newsSub: "صور من الأخبار التي يتابعها الناس اليوم",
-    trendingHeading: "خلفيات رائجة",
+    trendingHeading: "صور رائجة",
     trendingSub: "أكثر الصور إعجاباً على الإنترنت هذا الأسبوع",
     browseHeading: "تصفح حسب الموضوع",
 

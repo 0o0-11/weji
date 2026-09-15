@@ -64,9 +64,9 @@ export default function HomeFeed({
           </div>
         </section>
 
-        {/* ── Trending wallpapers ──────────────────────────────────────── */}
+        {/* ── Popular photographs ──────────────────────────────────────── */}
         {trending.length > 0 && (
-          <section>
+          <section id="popular" style={{ scrollMarginTop: "80px" }}>
             <SectionHeading title={t.trendingHeading} subtitle={t.trendingSub} />
             <MasonryGrid images={trending} onSelect={setActive} />
           </section>

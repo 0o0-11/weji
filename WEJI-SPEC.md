@@ -1,7 +1,7 @@
 # WEJI ويجي — MVP Spec
 
-**One line:** A bilingual (English/Arabic) visual search engine for photos, wallpapers and news
-pictures, with a 3D landing page and a 3D image viewer.
+**One line:** A bilingual (English/Arabic) image search engine for photos and news pictures,
+with a 3D landing page and a 3D image viewer.
 
 **Core goal:** make finding pictures easy — through search, and through pictures themselves.
 
@@ -21,7 +21,7 @@ pictures, with a 3D landing page and a 3D image viewer.
 | Look | Dark cinematic, near-black, one glowing accent |
 | Content safety | Strict filtering, always on, no user override |
 | Sign-in wall | None — browse and search freely; account only to save/like/follow/download |
-| User actions | Save to collections, Download wallpaper sizes, Like, Follow topics, Share |
+| User actions | Save to collections, Download at screen sizes, Like, Follow topics, Share |
 
 ---
 
@@ -29,10 +29,10 @@ pictures, with a 3D landing page and a 3D image viewer.
 
 **Phase 1 — the core — ✅ done**
 3D landing page · bilingual search with AR→EN translation · image grid · 3D image viewer ·
-news + wallpaper home feed · strict safety filter · full RTL/LTR
+news + popular-photograph home feed · strict safety filter · full RTL/LTR
 
 **Phase 2 — the account — ✅ done**
-Email + password sign-in · save to collections · download in wallpaper sizes · like · share
+Email + password sign-in · save to collections · download at screen sizes · like · share
 
 **Phase 3 — personalisation + launch**
 Follow topics · personalised home feed · deploy live to Vercel

@@ -10,7 +10,7 @@ export interface WejiImage {
   /** Highest available original, used for downloads. */
   download: string;
   /**
-   * The provider's un-sized base URL. Wallpaper downloads are built from this
+   * The provider's un-sized base URL. Sized downloads are built from this
    * by asking the provider's own CDN to render an exact size, so WEJI never has
    * to resize an image itself.
    */

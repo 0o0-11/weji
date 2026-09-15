@@ -90,7 +90,7 @@ export default function Landing({ images, demo }: { images: WejiImage[]; demo: b
               {t.heroCta}
             </Link>
             <Link
-              href="/search?q=wallpaper"
+              href="/home#popular"
               className="rounded-full border border-line px-6 py-2.5 text-sm font-semibold text-muted transition hover:border-gold/50 hover:text-gold"
             >
               {t.heroSecondary}

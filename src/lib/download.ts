@@ -1,15 +1,20 @@
 import type { WejiImage } from "@/lib/search/types";
 
 /**
- * Wallpaper downloads.
+ * Downloading a photo at a size that suits the viewer's screen.
+ *
+ * Deliberately *not* framed as wallpapers. Unsplash and Pexels both prohibit
+ * "wallpaper applications" by name in their API terms, and WEJI is a bilingual
+ * search engine that happens to offer a convenient size — the distinction is
+ * the difference between being approved and being cut off.
  *
  * Resizing is delegated to each provider's own image CDN, so WEJI never
  * processes an image itself — no image library, no CPU cost, no upload storage.
  */
 
-export type WallpaperSize = "phone" | "desktop" | "original";
+export type DownloadSize = "phone" | "desktop" | "original";
 
-export const WALLPAPER_SIZES: { key: WallpaperSize; width: number; height: number }[] = [
+export const DOWNLOAD_SIZES: { key: DownloadSize; width: number; height: number }[] = [
   { key: "phone", width: 1290, height: 2796 },
   { key: "desktop", width: 2560, height: 1440 },
   { key: "original", width: 0, height: 0 },
@@ -26,11 +31,11 @@ export function isDownloadable(image: WejiImage): boolean {
 }
 
 /** The provider URL that renders this picture at the requested size. */
-export function buildSizedUrl(image: WejiImage, size: WallpaperSize): string | null {
+export function buildSizedUrl(image: WejiImage, size: DownloadSize): string | null {
   if (!isDownloadable(image)) return null;
   if (size === "original") return image.download;
 
-  const spec = WALLPAPER_SIZES.find((candidate) => candidate.key === size);
+  const spec = DOWNLOAD_SIZES.find((candidate) => candidate.key === size);
   if (!spec) return null;
   const { width, height } = spec;
 
@@ -47,7 +52,7 @@ export function buildSizedUrl(image: WejiImage, size: WallpaperSize): string | n
 }
 
 /** A tidy, safe filename for the saved file. */
-export function buildFilename(image: WejiImage, size: WallpaperSize): string {
+export function buildFilename(image: WejiImage, size: DownloadSize): string {
   const slug = (image.alt || "weji-photo")
     .toLowerCase()
     .replace(/[^a-z0-9؀-ۿ]+/gi, "-")
@@ -63,7 +68,7 @@ export function buildFilename(image: WejiImage, size: WallpaperSize): string {
  * a cross-origin `<a download>` is ignored by browsers — the picture would open
  * in a new tab instead of saving, which is not what "Download" promises.
  */
-export function buildDownloadHref(image: WejiImage, size: WallpaperSize): string | null {
+export function buildDownloadHref(image: WejiImage, size: DownloadSize): string | null {
   const src = buildSizedUrl(image, size);
   if (!src) return null;
 

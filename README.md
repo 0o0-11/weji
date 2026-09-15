@@ -1,7 +1,7 @@
 # WEJI ويجي
 
-A bilingual (English / Arabic) visual search engine for photos, wallpapers and news
-pictures — with a 3D landing page and a 3D image viewer.
+A bilingual (English / Arabic) image search engine for photos and news pictures — with a
+3D landing page and a 3D image viewer.
 
 > Full product spec and decisions: [WEJI-SPEC.md](WEJI-SPEC.md)
 
@@ -56,13 +56,13 @@ first time they sign in.
 | Path | What it is |
 |---|---|
 | `src/app/page.tsx` | 3D landing page |
-| `src/app/home/page.tsx` | Home feed — live news pictures + trending wallpapers |
+| `src/app/home/page.tsx` | Home feed — live news pictures + popular photographs |
 | `src/app/search/page.tsx` | Search results |
 | `src/app/collections/` | Collections and the Liked view |
 | `src/app/login`, `src/app/signup` | Email + password accounts |
 | `src/app/api/search` | Unsplash + Pexels, with Arabic translation and safety filtering |
 | `src/app/api/news` | News pictures from RSS feeds |
-| `src/app/api/download` | Sized wallpaper downloads (with a strict host allow-list) |
+| `src/app/api/download` | Sized photo downloads (with a strict host allow-list) |
 | `src/lib/search/translate.ts` | Arabic → English search translation |
 | `src/lib/search/safety.ts` | Content filtering (always on) |
 | `src/lib/i18n/dictionary.ts` | **Every English and Arabic string in the app** — readable and editable |

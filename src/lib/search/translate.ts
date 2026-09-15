@@ -245,7 +245,10 @@ const AR_EN: Record<string, string> = {
   "طب": "medical",
   "مستشفي": "hospital",
 
-  // ── Wallpaper intent / خلفيات ───────────────────────────────────
+  // ── Screen-background searches / خلفيات ─────────────────────────
+  // Kept because people really do search this word and deserve results.
+  // Translating a query is fine; presenting WEJI as a wallpaper app is what
+  // Unsplash's and Pexels' terms prohibit.
   "خلفيات": "wallpaper",
   "خلفيه": "wallpaper",
   "خلفيات جوال": "phone wallpaper",
@@ -260,6 +263,7 @@ const AR_EN: Record<string, string> = {
   "بنفسجي": "purple",
   "هادئ": "minimal calm",
   "بسيط": "minimal",
+  "بساطه": "minimal",
   "فخم": "luxury",
   "ليل": "night",
   "نور": "light",
@@ -363,8 +367,11 @@ export async function translateQuery(input: string, signal?: AbortSignal): Promi
 
 /** Arabic labels for the browse categories, so the home page reads natively. */
 export const CATEGORIES: { en: string; ar: string; query: string }[] = [
-  { en: "Wallpapers", ar: "خلفيات", query: "wallpaper" },
-  { en: "Nature", ar: "طبيعه", query: "nature" },
+  { en: "Landscapes", ar: "مناظر طبيعية", query: "landscape" },
+  // Display spellings must be correct Arabic (ة, not ه). normalizeArabic()
+  // handles matching them against the dictionary, so the user never sees the
+  // normalised form.
+  { en: "Nature", ar: "طبيعة", query: "nature" },
   { en: "Desert", ar: "صحراء", query: "desert" },
   { en: "Architecture", ar: "عمارة", query: "architecture" },
   { en: "Travel", ar: "سفر", query: "travel" },

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { buildDownloadHref, isDownloadable, WALLPAPER_SIZES } from "@/lib/download";
+import { buildDownloadHref, isDownloadable, DOWNLOAD_SIZES } from "@/lib/download";
 import type { WejiImage } from "@/lib/search/types";
 
 /** Download the picture sized for a phone, a desktop, or at full resolution. */
@@ -69,7 +69,7 @@ export default function DownloadMenu({ image }: { image: WejiImage }) {
           className="absolute bottom-full z-20 mb-2 w-52 rounded-xl border border-line-strong bg-panel p-1.5 shadow-2xl"
           style={{ insetInlineStart: 0 }}
         >
-          {WALLPAPER_SIZES.map((size) => {
+          {DOWNLOAD_SIZES.map((size) => {
             const href = buildDownloadHref(image, size.key);
             if (!href) return null;
             return (

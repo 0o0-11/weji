@@ -4,7 +4,7 @@ import type { SearchResponse } from "@/lib/search/types";
 
 const PER_PAGE = 24;
 
-/** The trending-wallpaper feed on the home page and the pictures in the 3D hero. */
+/** The popular-photographs feed on the home page, and the pictures in the 3D hero. */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Math.min(Math.max(Number(searchParams.get("page") ?? 1) || 1, 1), 40);

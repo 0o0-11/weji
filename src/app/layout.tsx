@@ -20,7 +20,7 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "WEJI ويجي — Find any picture",
   description:
-    "Search millions of photos, wallpapers and news pictures in English and Arabic. ابحث عن ملايين الصور والخلفيات بالعربية.",
+    "A bilingual image search engine. Search millions of photos and news pictures in English and Arabic. محرك بحث عن الصور بالعربية والإنجليزية.",
 };
 
 export const viewport: Viewport = {
