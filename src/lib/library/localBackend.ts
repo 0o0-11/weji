@@ -13,6 +13,7 @@ import type { Collection, LibraryBackend } from "./types";
 const KEY_COLLECTIONS = "weji.collections";
 const KEY_ITEMS = "weji.items";
 const KEY_LIKES = "weji.likes";
+const KEY_TOPICS = "weji.topics";
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -104,6 +105,16 @@ export const localBackend: LibraryBackend = {
     write(KEY_LIKES, liked ? [image, ...without] : without);
   },
 
+  async listTopics() {
+    return read<string[]>(KEY_TOPICS, []);
+  },
+
+  async setTopic(topic, followed) {
+    const topics = read<string[]>(KEY_TOPICS, []);
+    const without = topics.filter((item) => item !== topic);
+    write(KEY_TOPICS, followed ? [...without, topic] : without);
+  },
+
   async snapshot() {
     const collections = ensureSeed();
     const savedIds = new Set<string>();
@@ -115,14 +126,15 @@ export const localBackend: LibraryBackend = {
     return {
       likedIds: read<WejiImage[]>(KEY_LIKES, []).map((item) => item.id),
       savedIds: [...savedIds],
+      topics: read<string[]>(KEY_TOPICS, []),
     };
   },
 };
 
 /** True when there is anything worth lifting into a new account. */
 export async function localHasContent(): Promise<boolean> {
-  const { likedIds, savedIds } = await localBackend.snapshot();
-  return likedIds.length > 0 || savedIds.length > 0;
+  const { likedIds, savedIds, topics } = await localBackend.snapshot();
+  return likedIds.length > 0 || savedIds.length > 0 || topics.length > 0;
 }
 
 /**
@@ -153,12 +165,17 @@ export async function migrateLocalToRemote(remote: LibraryBackend): Promise<void
     await remote.setLike(image, true);
   }
 
+  for (const topic of await localBackend.listTopics()) {
+    await remote.setTopic(topic, true);
+  }
+
   try {
     for (const collection of collections) {
       window.localStorage.removeItem(itemsKey(collection.id));
     }
     window.localStorage.removeItem(KEY_COLLECTIONS);
     window.localStorage.removeItem(KEY_LIKES);
+    window.localStorage.removeItem(KEY_TOPICS);
   } catch {
     // If clearing fails the data is already safely in the account.
   }

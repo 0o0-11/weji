@@ -53,6 +53,11 @@ export const STRINGS = {
     trendingHeading: "Popular photographs",
     trendingSub: "The most-loved pictures on the internet this week",
     browseHeading: "Browse by topic",
+    forYouHeading: "For you",
+    forYouSub: "From the topics you follow",
+    followTopic: "Follow",
+    followingTopic: "Following",
+    followHint: "Follow a topic and it appears at the top of your home page.",
 
     // ── Viewer ───────────────────────────────────────────────────────────
     viewerClose: "Close",
@@ -171,6 +176,11 @@ export const STRINGS = {
     trendingHeading: "صور رائجة",
     trendingSub: "أكثر الصور إعجاباً على الإنترنت هذا الأسبوع",
     browseHeading: "تصفح حسب الموضوع",
+    forYouHeading: "لك",
+    forYouSub: "من المواضيع التي تتابعها",
+    followTopic: "متابعة",
+    followingTopic: "تتابعه",
+    followHint: "تابع موضوعاً ليظهر في أعلى صفحتك الرئيسية.",
 
     // ── عارض الصور ───────────────────────────────────────────────────────
     viewerClose: "إغلاق",

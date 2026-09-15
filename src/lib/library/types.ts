@@ -27,6 +27,15 @@ export interface LibraryBackend {
   removeItem(collectionId: string, imageId: string): Promise<void>;
   listLikes(): Promise<WejiImage[]>;
   setLike(image: WejiImage, liked: boolean): Promise<void>;
+
+  /**
+   * Followed topics drive the personalised home feed. Stored as the English
+   * search term, never the translated label, so a reader who switches language
+   * keeps the same follows.
+   */
+  listTopics(): Promise<string[]>;
+  setTopic(topic: string, followed: boolean): Promise<void>;
+
   /** Ids only — loaded once so every heart and save badge renders instantly. */
-  snapshot(): Promise<{ likedIds: string[]; savedIds: string[] }>;
+  snapshot(): Promise<{ likedIds: string[]; savedIds: string[]; topics: string[] }>;
 }

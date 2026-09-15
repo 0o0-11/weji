@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Attribution from "./Attribution";
 import Header from "./Header";
-import MasonryGrid from "./MasonryGrid";
+import MasonryGrid, { MasonrySkeleton } from "./MasonryGrid";
+import TopicChips from "./TopicChips";
 import Viewer3D from "./Viewer3D";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { CATEGORIES } from "@/lib/search/translate";
+import { useLibrary } from "@/lib/library/LibraryProvider";
 import type { WejiImage } from "@/lib/search/types";
 
 export default function HomeFeed({
@@ -20,7 +20,40 @@ export default function HomeFeed({
   demo: boolean;
 }) {
   const { t, locale } = useLocale();
+  const { topics, ready } = useLibrary();
   const [active, setActive] = useState<WejiImage | null>(null);
+
+  const [forYou, setForYou] = useState<WejiImage[]>([]);
+  const [forYouLoading, setForYouLoading] = useState(false);
+
+  // The personalised feed is fetched in the browser rather than rendered on the
+  // server: the server has no idea who is reading until the library loads, and
+  // the news and popular sections should never wait on it.
+  const topicKey = topics.join(",");
+  useEffect(() => {
+    if (!ready || !topicKey) {
+      setForYou([]);
+      return;
+    }
+    let active = true;
+    setForYouLoading(true);
+
+    fetch(`/api/foryou?topics=${encodeURIComponent(topicKey)}`)
+      .then((response) => response.json())
+      .then((data: { images?: WejiImage[] }) => {
+        if (active) setForYou(data.images ?? []);
+      })
+      .catch(() => {
+        if (active) setForYou([]);
+      })
+      .finally(() => {
+        if (active) setForYouLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [ready, topicKey]);
 
   // Both languages are rendered on the server; we pick the reader's own here so
   // there is no second request and no flash of the wrong language.
@@ -40,6 +73,18 @@ export default function HomeFeed({
           </p>
         )}
 
+        {/* ── For you ──────────────────────────────────────────────────── */}
+        {topicKey && (
+          <section className="mb-16">
+            <SectionHeading title={t.forYouHeading} subtitle={t.forYouSub} />
+            {forYouLoading && forYou.length === 0 ? (
+              <MasonrySkeleton count={8} />
+            ) : (
+              <MasonryGrid images={forYou} onSelect={setActive} />
+            )}
+          </section>
+        )}
+
         {/* ── News ─────────────────────────────────────────────────────── */}
         {localisedNews.length > 0 && (
           <section className="mb-16">
@@ -50,18 +95,8 @@ export default function HomeFeed({
 
         {/* ── Topics ───────────────────────────────────────────────────── */}
         <section className="mb-16">
-          <SectionHeading title={t.browseHeading} />
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((category) => (
-              <Link
-                key={category.query}
-                href={`/search?q=${encodeURIComponent(locale === "ar" ? category.ar : category.query)}`}
-                className="rounded-full border border-line bg-panel/60 px-4 py-2 text-sm text-muted transition hover:-translate-y-0.5 hover:border-gold/50 hover:text-gold"
-              >
-                {locale === "ar" ? category.ar : category.en}
-              </Link>
-            ))}
-          </div>
+          <SectionHeading title={t.browseHeading} subtitle={topicKey ? undefined : t.followHint} />
+          <TopicChips />
         </section>
 
         {/* ── Popular photographs ──────────────────────────────────────── */}

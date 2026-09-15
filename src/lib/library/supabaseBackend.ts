@@ -111,14 +111,35 @@ export function createSupabaseBackend(supabase: SupabaseClient, userId: string):
       }
     },
 
+    async listTopics() {
+      const { data, error } = await supabase
+        .from("followed_topics")
+        .select("topic")
+        .order("created_at", { ascending: true });
+      if (error || !data) return [];
+      return (data as { topic: string }[]).map((row) => row.topic);
+    },
+
+    async setTopic(topic, followed) {
+      if (followed) {
+        await supabase
+          .from("followed_topics")
+          .upsert({ user_id: userId, topic }, { onConflict: "user_id,topic" });
+      } else {
+        await supabase.from("followed_topics").delete().eq("topic", topic);
+      }
+    },
+
     async snapshot() {
-      const [likes, items] = await Promise.all([
+      const [likes, items, topics] = await Promise.all([
         supabase.from("likes").select("image_id"),
         supabase.from("collection_items").select("image_id"),
+        supabase.from("followed_topics").select("topic"),
       ]);
       return {
         likedIds: ((likes.data as { image_id: string }[] | null) ?? []).map((row) => row.image_id),
         savedIds: ((items.data as { image_id: string }[] | null) ?? []).map((row) => row.image_id),
+        topics: ((topics.data as { topic: string }[] | null) ?? []).map((row) => row.topic),
       };
     },
   };

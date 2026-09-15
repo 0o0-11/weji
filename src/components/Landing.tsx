@@ -5,10 +5,10 @@ import { useState } from "react";
 import Attribution from "./Attribution";
 import Hero3D from "./Hero3D";
 import SearchBar from "./SearchBar";
+import TopicChips from "./TopicChips";
 import Viewer3D from "./Viewer3D";
 import { Wordmark, LangSwitch } from "./Header";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { CATEGORIES } from "@/lib/search/translate";
 import type { WejiImage } from "@/lib/search/types";
 
 export default function Landing({ images, demo }: { images: WejiImage[]; demo: boolean }) {
@@ -109,17 +109,10 @@ export default function Landing({ images, demo }: { images: WejiImage[]; demo: b
           <h2 className="mb-4 text-center text-xs font-bold uppercase tracking-[0.2em] text-faint">
             {t.browseHeading}
           </h2>
-          <div className="flex flex-wrap justify-center gap-2">
-            {CATEGORIES.map((category) => (
-              <Link
-                key={category.query}
-                href={`/search?q=${encodeURIComponent(locale === "ar" ? category.ar : category.query)}`}
-                className="rounded-full border border-line bg-panel/60 px-4 py-2 text-sm text-muted transition hover:-translate-y-0.5 hover:border-gold/50 hover:text-gold"
-              >
-                {locale === "ar" ? category.ar : category.en}
-              </Link>
-            ))}
-          </div>
+          {/* No follow buttons here: a first-time visitor hasn't been given a
+              reason to follow anything yet. Following belongs on the home page,
+              next to the feed it changes. */}
+          <TopicChips center showFollow={false} />
 
           {demo && (
             <p className="mx-auto mt-10 max-w-md rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 text-center text-xs leading-relaxed text-muted">

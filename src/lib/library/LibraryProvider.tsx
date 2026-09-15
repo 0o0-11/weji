@@ -14,8 +14,12 @@ interface LibraryValue {
   collections: Collection[];
   likedIds: Set<string>;
   savedIds: Set<string>;
+  /** English search terms the user follows, in the order they followed them. */
+  topics: string[];
   isLiked: (imageId: string) => boolean;
   isSaved: (imageId: string) => boolean;
+  isFollowing: (topic: string) => boolean;
+  toggleTopic: (topic: string) => Promise<void>;
   toggleLike: (image: WejiImage) => Promise<void>;
   saveTo: (collectionId: string, image: WejiImage) => Promise<void>;
   removeFrom: (collectionId: string, imageId: string) => Promise<void>;
@@ -35,6 +39,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [topics, setTopics] = useState<string[]>([]);
 
   // Which store we're talking to right now.
   const backend = useMemo<LibraryBackend>(() => {
@@ -51,6 +56,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       setCollections(nextCollections);
       setLikedIds(new Set(snapshot.likedIds));
       setSavedIds(new Set(snapshot.savedIds));
+      setTopics(snapshot.topics);
       setReady(true);
     },
     [],
@@ -89,8 +95,21 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       collections,
       likedIds,
       savedIds,
+      topics,
       isLiked: (imageId) => likedIds.has(imageId),
       isSaved: (imageId) => savedIds.has(imageId),
+      isFollowing: (topic) => topics.includes(topic),
+
+      async toggleTopic(topic) {
+        const following = topics.includes(topic);
+        const next = following ? topics.filter((item) => item !== topic) : [...topics, topic];
+        setTopics(next);
+        try {
+          await backend.setTopic(topic, !following);
+        } catch {
+          setTopics(topics);
+        }
+      },
 
       async toggleLike(image) {
         const liked = likedIds.has(image.id);
@@ -153,7 +172,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       listLikes: () => backend.listLikes(),
       refresh,
     };
-  }, [backend, collections, likedIds, savedIds, ready, isLocal, load]);
+  }, [backend, collections, likedIds, savedIds, topics, ready, isLocal, load]);
 
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;
 }

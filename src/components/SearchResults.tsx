@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import MasonryGrid, { MasonrySkeleton } from "./MasonryGrid";
+import TopicChips from "./TopicChips";
 import Viewer3D from "./Viewer3D";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { CATEGORIES } from "@/lib/search/translate";
 import type { SearchResponse, WejiImage } from "@/lib/search/types";
 
 type Status = "idle" | "loading" | "loaded" | "blocked";
@@ -120,16 +120,8 @@ export default function SearchResults() {
         ) : images.length === 0 ? (
           <>
             <EmptyState title={t.noResults} body={t.noResultsBody} />
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {CATEGORIES.map((category) => (
-                <Link
-                  key={category.query}
-                  href={`/search?q=${encodeURIComponent(locale === "ar" ? category.ar : category.query)}`}
-                  className="rounded-full border border-line bg-panel/60 px-4 py-2 text-sm text-muted transition hover:border-gold/50 hover:text-gold"
-                >
-                  {locale === "ar" ? category.ar : category.en}
-                </Link>
-              ))}
+            <div className="mt-6">
+              <TopicChips center showFollow={false} />
             </div>
           </>
         ) : (
