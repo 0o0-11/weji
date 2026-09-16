@@ -3,6 +3,13 @@
 A bilingual (English / Arabic) image search engine for photos and news pictures — with a
 3D landing page and a 3D image viewer.
 
+| | |
+|---|---|
+| **Live site** | https://weji.vercel.app |
+| **Code** | https://github.com/0o0-11/weji |
+| **Database & accounts** | [Supabase project](https://supabase.com/dashboard/project/evitjskjqflqbafdbapn) |
+| **Deployments** | [Vercel dashboard](https://vercel.com/dashboard) |
+
 > Full product spec and decisions: [WEJI-SPEC.md](WEJI-SPEC.md)
 
 ---
