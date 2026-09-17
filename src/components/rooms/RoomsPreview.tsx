@@ -12,7 +12,7 @@ import { useLibrary } from "@/lib/library/LibraryProvider";
 import type { SearchResponse, WejiImage } from "@/lib/search/types";
 import type { RoomControls } from "./RoomsCanvas";
 import type { RoomPicture, ScrollDriver } from "./RoomScene";
-import { DEFAULT_PALETTE, PALETTES, type Palette } from "./palettes";
+import { THEME } from "./theme";
 import { detectTier, type DeviceTier } from "./tier";
 
 // three.js is only fetched once the page has painted, and never on the server.
@@ -36,8 +36,6 @@ const SOURCE_LABELS: Record<WejiImage["source"], string> = {
   news: "News",
 };
 
-const PALETTE_KEY = "weji.preview.palette";
-
 /** How far to scroll to fly the whole tunnel once. */
 const SCROLL_PER_TURN = 9000;
 
@@ -54,7 +52,6 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
   const [tier, setTier] = useState<DeviceTier | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scroll, setScroll] = useState<ScrollDriver | null>(null);
-  const [palette, setPalette] = useState<Palette>(DEFAULT_PALETTE);
   const [images, setImages] = useState(initialImages);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [infoShown, setInfoShown] = useState(false);
@@ -69,12 +66,6 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
   useEffect(() => {
     setTier(detectTier());
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    try {
-      const saved = PALETTES.find((candidate) => candidate.id === window.localStorage.getItem(PALETTE_KEY));
-      if (saved) setPalette(saved);
-    } catch {
-      // Private browsing: start with the default colours.
-    }
   }, []);
 
   const has3d = tier === "high" || tier === "low";
@@ -102,14 +93,6 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     };
   }, [has3d]);
 
-  const choosePalette = (next: Palette) => {
-    setPalette(next);
-    try {
-      window.localStorage.setItem(PALETTE_KEY, next.id);
-    } catch {
-      // The choice simply won't be remembered.
-    }
-  };
 
   const openImage = openIndex === null ? null : (images[openIndex] ?? null);
 
@@ -173,20 +156,13 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     return `${translated}${status.count} ${t.roomsPictures} · ${status.sources.join(" · ")}`;
   }, [status, t]);
 
-  const paletteName: Record<Palette["id"], string> = {
-    gold: t.paletteGold,
-    ocean: t.paletteOcean,
-    violet: t.paletteViolet,
-    dusk: t.paletteDusk,
-  };
 
   return (
-    <div className="rm" style={{ "--rm-ink": palette.ink, "--rm-accent": palette.accent } as CSSProperties}>
+    <div className="rm" style={{ "--rm-ink": THEME.ink, "--rm-accent": THEME.accent } as CSSProperties}>
       <div className="fixed inset-0">
         {has3d && scroll && (
           <RoomsCanvas
             pictures={images.map(toPicture)}
-            palette={palette}
             tier={tier}
             reducedMotion={reducedMotion}
             scroll={scroll}
@@ -206,7 +182,7 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
         <header className="rm-header">
           <div className="rm-top">
             <Link href="/" className="rm-focus flex items-baseline gap-2 rounded-md text-sm font-semibold tracking-wide">
-              WEJI <span className="text-base font-bold leading-none text-[#ffb23f]">ويجي</span>
+              WEJI <span className="text-base font-bold leading-none text-[var(--rm-accent)]">ويجي</span>
             </Link>
             <div className="flex items-center gap-2">
               <span className="hidden rounded-full border border-white/12 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/60 md:inline">
@@ -233,6 +209,14 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  // Enter searches even where the browser doesn't submit the form by itself;
+                  // not while an Arabic or other keyboard is still composing a word.
+                  if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    void search();
+                  }
+                }}
                 placeholder={t.searchPlaceholder}
                 aria-label={t.searchAction}
                 enterKeyHint="search"
@@ -249,23 +233,6 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
         </header>
 
         <footer className="rm-footer">
-          <div className="rm-palettes" role="radiogroup" aria-label={t.roomsColours}>
-            <span className="rm-palettes-label">{t.roomsColours}</span>
-            {PALETTES.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                role="radio"
-                aria-checked={palette.id === option.id}
-                aria-label={paletteName[option.id]}
-                title={paletteName[option.id]}
-                onClick={() => choosePalette(option)}
-                className="rm-swatch rm-focus"
-                style={{ background: `radial-gradient(circle at 35% 35%, ${option.glowB}, ${option.glowA} 45%, ${option.ink} 100%)` }}
-              />
-            ))}
-            <span className="rm-palette-name">{paletteName[palette.id]}</span>
-          </div>
           <p>{t.roomsHint}</p>
           <p className="rm-credits">
             {t.roomsPicturesFrom}{" "}

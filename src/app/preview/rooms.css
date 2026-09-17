@@ -1,12 +1,12 @@
 /*
- * WEJI space tunnel — calm on purpose. The pictures bring the colour; the page
- * around them is quiet ink with one accent, both set by the chosen colour theme.
+ * WEJI tunnel — calm on purpose. The pictures bring the colour; the page around
+ * them is the Deep ocean theme: quiet ink with one teal accent.
  */
 
 .rm {
-  --rm-ink: #09080e;
+  --rm-ink: #04090f;
   --rm-mist: #f3f1f8;
-  --rm-accent: #ffb23f;
+  --rm-accent: #3de0d0;
   --rm-glass: rgba(16, 14, 24, 0.62);
   --rm-line: rgba(243, 241, 248, 0.12);
   --rm-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -83,8 +83,14 @@ html[dir="rtl"] .rm-search {
   padding: 0.3rem 1rem 0.3rem 0.3rem;
 }
 
+/* The glowing border of the whole bar shows focus, so the field needs no outline of its own. */
+.rm-search input:focus,
+.rm-search input:focus-visible {
+  outline: none;
+}
+
 .rm-search:focus-within {
-  border-color: rgba(255, 178, 63, 0.5);
+  border-color: color-mix(in srgb, var(--rm-accent) 55%, transparent);
 }
 
 .rm-go {
@@ -93,7 +99,7 @@ html[dir="rtl"] .rm-search {
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #140f08;
+  color: #031412;
   background: var(--rm-accent);
   transition: filter 0.2s;
 }
@@ -128,7 +134,7 @@ html[dir="rtl"] .rm-search {
 }
 
 .rm-chip:hover {
-  border-color: rgba(255, 178, 63, 0.45);
+  border-color: color-mix(in srgb, var(--rm-accent) 50%, transparent);
 }
 
 .rm-chip.is-liked {
@@ -155,52 +161,6 @@ html[dir="rtl"] .rm-search {
   font-size: 0.72rem;
   color: rgba(243, 241, 248, 0.7);
   background: linear-gradient(to top, color-mix(in srgb, var(--rm-ink) 90%, transparent), transparent);
-}
-
-/* ── Colour themes ────────────────────────────────────────────────────────── */
-
-.rm-palettes {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  background: var(--rm-glass);
-  border: 1px solid var(--rm-line);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-.rm-palettes-label,
-.rm-palette-name {
-  font-size: 0.7rem;
-  color: rgba(243, 241, 248, 0.6);
-}
-
-.rm-palette-name {
-  min-width: 5.5rem;
-  color: var(--rm-accent);
-}
-
-.rm-swatch {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 999px;
-  border: 2px solid transparent;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  transition:
-    transform 0.25s var(--rm-out),
-    border-color 0.2s;
-}
-
-.rm-swatch:hover {
-  transform: scale(1.12);
-}
-
-.rm-swatch[aria-checked="true"] {
-  border-color: var(--rm-mist);
-  transform: scale(1.12);
 }
 
 .rm-credits {
@@ -292,6 +252,31 @@ html[dir="rtl"] .rm-search {
     visibility 0s;
 }
 
+/* The Save and Download menus are shared with the live site, which is gold;
+   in the tunnel they take the theme's accent instead. */
+.rm-info .bg-gold {
+  background-color: var(--rm-accent);
+  color: #031412;
+}
+
+.rm-info .hover\:bg-gold-deep:hover {
+  background-color: color-mix(in srgb, var(--rm-accent) 85%, white);
+}
+
+.rm-info .text-gold,
+.rm-info .hover\:text-gold:hover {
+  color: var(--rm-accent);
+}
+
+.rm-info .border-gold\/50,
+.rm-info .hover\:border-gold\/50:hover {
+  border-color: color-mix(in srgb, var(--rm-accent) 50%, transparent);
+}
+
+.rm-info .bg-gold\/10 {
+  background-color: color-mix(in srgb, var(--rm-accent) 10%, transparent);
+}
+
 .rm-flat-photo {
   position: absolute;
   left: 50%;
@@ -305,8 +290,7 @@ html[dir="rtl"] .rm-search {
 
 @media (prefers-reduced-motion: reduce) {
   .rm-info,
-  .rm-close,
-  .rm-swatch {
+  .rm-close {
     transition: none;
   }
 }

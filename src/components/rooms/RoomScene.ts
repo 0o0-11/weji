@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { createBackdrop, createPictureMaterial, createShared, type PictureUniforms, type SharedUniforms } from "./material";
-import type { Palette } from "./palettes";
+import type { Palette } from "./theme";
 import { PictureLoader } from "./pictures";
 
 /**

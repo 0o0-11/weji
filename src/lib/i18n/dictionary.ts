@@ -148,12 +148,7 @@ export const STRINGS = {
 
     // ── Room demos (design preview) ──────────────────────────────────────
     previewBadge: "Design preview",
-    roomsHint: "Scroll to fly through the tunnel · Tap a picture to open it",
-    roomsColours: "Colours",
-    paletteGold: "Night gold",
-    paletteOcean: "Deep ocean",
-    paletteViolet: "Royal violet",
-    paletteDusk: "Desert dusk",
+    roomsHint: "Scroll to move through the tunnel · Tap a picture to open it",
     roomsBusy: "Searching…",
     roomsBackToLive: "Current WEJI",
     roomsPictures: "pictures",
@@ -304,12 +299,7 @@ export const STRINGS = {
 
     // ── التفتّح (معاينة التصميم) ─────────────────────────────────────────
     previewBadge: "معاينة التصميم",
-    roomsHint: "مرّر لتطير عبر النفق · اضغط على صورة لفتحها",
-    roomsColours: "الألوان",
-    paletteGold: "ذهبي ليلي",
-    paletteOcean: "محيط عميق",
-    paletteViolet: "بنفسجي ملكي",
-    paletteDusk: "غروب الصحراء",
+    roomsHint: "مرّر للتحرك داخل النفق · اضغط على صورة لفتحها",
     roomsBusy: "نبحث…",
     roomsBackToLive: "ويجي الحالي",
     roomsPictures: "صورة",
