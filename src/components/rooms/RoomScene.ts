@@ -37,6 +37,10 @@ export interface RoomOptions {
   onOpen: (pictureIndex: number) => void;
   onClosing: () => void;
   onClosed: () => void;
+  /** The visitor scrolled or dragged for the first time. */
+  onInteract?: () => void;
+  /** A room with one picture in focus (the carousel) reports which one. */
+  onCentre?: (pictureIndex: number) => void;
 }
 
 export interface RoomItem {
@@ -112,6 +116,7 @@ export abstract class RoomScene {
    * past, negative while the new ones are still arriving from far away.
    */
   protected warp = 0;
+  private interacted = false;
 
   private readonly loader: PictureLoader;
   private readonly raycaster = new THREE.Raycaster();
@@ -164,7 +169,7 @@ export abstract class RoomScene {
     this.setPalette(options.palette);
     this.focusShared = { ...this.shared, uDim: { value: 0 }, uFog: { value: new THREE.Vector2(1e5, 1e5 + 1) } };
 
-    this.loader = new PictureLoader(this.renderer, this.tier === "high" ? 640 : 384, (index, texture) => this.onTexture(index, texture));
+    this.loader = new PictureLoader(this.renderer, this.textureSize(), (index, texture) => this.onTexture(index, texture));
 
     canvas.addEventListener("pointerdown", this.onPointerDown);
     canvas.addEventListener("pointermove", this.onPointerMove);
@@ -197,6 +202,22 @@ export abstract class RoomScene {
   protected abstract fitCamera(width: number, height: number): void;
   /** Order to load pictures in: nearest to the viewer first. */
   protected abstract loadOrder(): RoomItem[];
+
+  /** Longest side, in pixels, pictures are kept at on the GPU. Called before the room's own fields exist. */
+  protected textureSize(): number {
+    return this.options.tier === "high" ? 768 : 512;
+  }
+
+  /** Which version of a picture to load: rooms that show pictures very large ask for the bigger one. */
+  protected textureUrl(picture: RoomPicture): string {
+    return picture.thumb;
+  }
+
+  /** A room may handle a tap itself (the carousel brings a side picture to the middle). Return true if it did. */
+  protected onPick(item: RoomItem): boolean {
+    void item;
+    return false;
+  }
 
   // ── Public API ────────────────────────────────────────────────────────────
 
@@ -334,7 +355,7 @@ export abstract class RoomScene {
     this.clearItems();
     this.pictures = pictures.slice(0, this.capacity());
     this.layout(this.pictures);
-    this.loader.fill(this.loadOrder().map((item) => ({ index: item.index, url: item.picture.thumb })));
+    this.loader.fill(this.loadOrder().map((item) => ({ index: item.index, url: this.textureUrl(item.picture) })));
   }
 
   private clearItems() {
@@ -368,7 +389,7 @@ export abstract class RoomScene {
     }
     if (this.phase !== "idle") return;
     const item = this.itemAt(clientX, clientY);
-    if (item) this.open(item);
+    if (item && !this.onPick(item)) this.open(item);
   }
 
   private open(item: RoomItem) {
@@ -557,6 +578,11 @@ export abstract class RoomScene {
     for (const tween of finished) tween.done?.();
 
     this.loader.upload(this.tier === "high" ? 4 : 2);
+
+    if (!this.interacted && (this.scrollDelta !== 0 || this.dragX !== 0 || this.dragY !== 0)) {
+      this.interacted = true;
+      this.options.onInteract?.();
+    }
 
     // Only an open picture stops the flight; a search keeps you moving.
     const frozen = this.phase === "opening" || this.phase === "open" || this.phase === "closing";

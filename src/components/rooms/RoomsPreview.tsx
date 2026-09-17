@@ -9,9 +9,11 @@ import SaveMenu from "@/components/SaveMenu";
 import { isDownloadable } from "@/lib/download";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useLibrary } from "@/lib/library/LibraryProvider";
+import { CATEGORIES } from "@/lib/search/translate";
 import type { SearchResponse, WejiImage } from "@/lib/search/types";
 import type { RoomControls } from "./RoomsCanvas";
 import type { RoomPicture, ScrollDriver } from "./RoomScene";
+import { ROOM_KINDS, type RoomKind } from "./kinds";
 import { THEME } from "./theme";
 import { detectTier, type DeviceTier } from "./tier";
 
@@ -36,7 +38,9 @@ const SOURCE_LABELS: Record<WejiImage["source"], string> = {
   news: "News",
 };
 
-/** How far to scroll to fly the whole tunnel once. */
+const TOPIC_QUERIES = ["nature", "architecture", "space", "cars", "animals", "abstract art"];
+
+/** How far to scroll to move through a whole look once. */
 const SCROLL_PER_TURN = 9000;
 
 type Status =
@@ -47,16 +51,20 @@ type Status =
 const sourcesOf = (images: WejiImage[]) => [...new Set(images.map((image) => SOURCE_LABELS[image.source]))];
 
 export default function RoomsPreview({ initialImages }: { initialImages: WejiImage[] }) {
-  const { t, toggleLocale } = useLocale();
+  const { t, locale, toggleLocale } = useLocale();
 
   const [tier, setTier] = useState<DeviceTier | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scroll, setScroll] = useState<ScrollDriver | null>(null);
+  const [kind, setKind] = useState<RoomKind>("carousel");
   const [images, setImages] = useState(initialImages);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [infoShown, setInfoShown] = useState(false);
+  const [centreIndex, setCentreIndex] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+  const [topic, setTopic] = useState<string | null>(null);
+  const [docked, setDocked] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
 
   const controls = useRef<RoomControls | null>(null);
@@ -66,11 +74,13 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
   useEffect(() => {
     setTier(detectTier());
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const requested = new URLSearchParams(window.location.search).get("look");
+    if (ROOM_KINDS.includes(requested as RoomKind)) setKind(requested as RoomKind);
   }, []);
 
   const has3d = tier === "high" || tier === "low";
 
-  // Smooth, weighted scrolling (Lenis) moves you through the room.
+  // Smooth, weighted scrolling (Lenis) moves you through the pictures.
   useEffect(() => {
     if (!has3d) return;
     const lenis = new Lenis({
@@ -93,8 +103,17 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     };
   }, [has3d]);
 
+  const chooseKind = (next: RoomKind) => {
+    if (next === kind || openIndex !== null) return;
+    setKind(next);
+    setCentreIndex(null);
+    const url = new URL(window.location.href);
+    url.searchParams.set("look", next);
+    window.history.replaceState(null, "", url);
+  };
 
   const openImage = openIndex === null ? null : (images[openIndex] ?? null);
+  const centreImage = kind === "carousel" && centreIndex !== null ? (images[centreIndex] ?? null) : null;
 
   const handleOpen = useCallback((index: number) => {
     setOpenIndex(index);
@@ -102,6 +121,8 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
   }, []);
   const handleClosing = useCallback(() => setInfoShown(false), []);
   const handleClosed = useCallback(() => setOpenIndex(null), []);
+  const handleInteract = useCallback(() => setDocked(true), []);
+  const handleCentre = useCallback((index: number) => setCentreIndex(index), []);
 
   const close = useCallback(() => {
     setInfoShown(false);
@@ -122,10 +143,12 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     return () => window.removeEventListener("keydown", onKey);
   }, [openIndex, close]);
 
-  const search = async () => {
-    const trimmed = query.trim();
+  const search = async (text: string, chosenTopic: string | null) => {
+    const trimmed = text.trim();
     if (!trimmed || busy || openIndex !== null) return;
     setBusy(true);
+    setTopic(chosenTopic);
+    setDocked(true);
     try {
       const response = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&size=wide`);
       const data = (await response.json()) as Partial<SearchResponse> & { blocked?: boolean };
@@ -139,6 +162,7 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
         return;
       }
       setImages(next);
+      setCentreIndex(null);
       controls.current?.showResults(next.map(toPicture));
       setStatus({ kind: "results", count: next.length, sources: sourcesOf(next), translated: data.translated && data.query ? data.query : null });
     } catch {
@@ -156,12 +180,23 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     return `${translated}${status.count} ${t.roomsPictures} · ${status.sources.join(" · ")}`;
   }, [status, t]);
 
+  const lookLabel: Record<RoomKind, string> = { carousel: t.lookCarousel, gallery: t.lookGallery, floating: t.lookFloating };
+  const lookHint: Record<RoomKind, string> = { carousel: t.lookCarouselHint, gallery: t.lookGalleryHint, floating: t.lookFloatingHint };
+  const topics = [
+    { label: t.roomsAnime, query: "anime" },
+    ...TOPIC_QUERIES.map((value) => {
+      const category = CATEGORIES.find((candidate) => candidate.query === value)!;
+      return { label: locale === "ar" ? category.ar : category.en, query: category.query };
+    }),
+  ];
 
   return (
     <div className="rm" style={{ "--rm-ink": THEME.ink, "--rm-accent": THEME.accent } as CSSProperties}>
       <div className="fixed inset-0">
         {has3d && scroll && (
           <RoomsCanvas
+            key={kind}
+            kind={kind}
             pictures={images.map(toPicture)}
             tier={tier}
             reducedMotion={reducedMotion}
@@ -170,70 +205,125 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
             onOpen={handleOpen}
             onClosing={handleClosing}
             onClosed={handleClosed}
+            onInteract={handleInteract}
+            onCentre={handleCentre}
           />
         )}
         {tier === "none" && <FlatGrid images={images} onOpen={handleOpen} />}
       </div>
 
-      {/* Scrolling this invisible column is what moves you through the room. */}
+      {/* Scrolling this invisible column is what moves you through the pictures. */}
       {has3d && <div aria-hidden style={{ height: `calc(100svh + ${SCROLL_PER_TURN}px)` }} />}
 
-      <div className={`rm-overlay ${openImage ? "is-open" : ""}`}>
+      <div className={`rm-overlay ${openImage ? "is-open" : ""} ${docked ? "is-docked" : ""}`}>
         <header className="rm-header">
-          <div className="rm-top">
-            <Link href="/" className="rm-focus flex items-baseline gap-2 rounded-md text-sm font-semibold tracking-wide">
-              WEJI <span className="text-base font-bold leading-none text-[var(--rm-accent)]">ويجي</span>
+          <Link href="/" className="rm-brand rm-focus">
+            <span className="rm-brand-latin">WEJI</span>
+            <span className="rm-brand-arabic">ويجي</span>
+          </Link>
+          <div className="rm-header-actions">
+            <button type="button" onClick={toggleLocale} className="rm-link rm-focus">
+              {t.langLabel}
+            </button>
+            <Link href="/account" className="rm-avatar rm-focus" aria-label={t.roomsAccount} title={t.roomsAccount}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+              </svg>
             </Link>
-            <div className="flex items-center gap-2">
-              <span className="hidden rounded-full border border-white/12 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/60 md:inline">
-                {t.previewBadge}
-              </span>
-              <button type="button" onClick={toggleLocale} className="rm-chip rm-focus">
-                {t.langLabel}
-              </button>
-              <Link href="/home" className="rm-chip rm-focus">
-                {t.roomsBackToLive}
-              </Link>
-            </div>
-          </div>
-
-          <div className="rm-controls">
-            <form
-              role="search"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void search();
-              }}
-              className="rm-search"
-            >
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  // Enter searches even where the browser doesn't submit the form by itself;
-                  // not while an Arabic or other keyboard is still composing a word.
-                  if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-                    event.preventDefault();
-                    void search();
-                  }
-                }}
-                placeholder={t.searchPlaceholder}
-                aria-label={t.searchAction}
-                enterKeyHint="search"
-                className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40"
-              />
-              <button type="submit" disabled={busy} className="rm-go rm-focus">
-                {busy ? t.roomsBusy : t.searchAction}
-              </button>
-            </form>
-            <p className="rm-status" aria-live="polite">
-              {statusText}
-            </p>
           </div>
         </header>
 
+        {/* On arrival the search sits large in the middle; once you move or search, it shrinks to the top. */}
+        <div className="rm-hero">
+          <div aria-hidden className="rm-hero-scrim" />
+          <h1 className="rm-headline">{t.roomsHeadline}</h1>
+          <form
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void search(query, null);
+            }}
+            className="rm-search"
+          >
+            <svg className="rm-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                // Enter searches even where the browser doesn't submit the form by itself;
+                // not while an Arabic or other keyboard is still composing a word.
+                if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  void search(query, null);
+                }
+              }}
+              placeholder={t.roomsSearchPlaceholder}
+              aria-label={t.searchAction}
+              enterKeyHint="search"
+            />
+            <button type="submit" disabled={busy} className="rm-go rm-focus" aria-label={t.searchAction}>
+              {busy ? (
+                <span className="rm-spinner" aria-hidden />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              )}
+            </button>
+          </form>
+          <div className="rm-topics">
+            {topics.map((entry) => (
+              <button
+                key={entry.query}
+                type="button"
+                aria-pressed={topic === entry.query}
+                onClick={() => {
+                  setQuery(entry.label);
+                  void search(entry.query, entry.query);
+                }}
+                className="rm-topic rm-focus"
+              >
+                {entry.label}
+              </button>
+            ))}
+          </div>
+          <p className="rm-status" aria-live="polite">
+            {statusText}
+          </p>
+        </div>
+
         <footer className="rm-footer">
-          <p>{t.roomsHint}</p>
+          {centreImage && (
+            <div className="rm-caption" key={centreImage.id}>
+              <p className="rm-caption-title">{centreImage.alt || centreImage.credit}</p>
+              <p className="rm-caption-credit">
+                {centreImage.credit} · {centreImage.sourceName}
+              </p>
+            </div>
+          )}
+          <div className="rm-looks" role="tablist" aria-label={t.roomsTry}>
+            <span className="rm-looks-label">{t.roomsTry}</span>
+            {ROOM_KINDS.map((option, index) => (
+              <button
+                key={option}
+                type="button"
+                role="tab"
+                aria-selected={kind === option}
+                onClick={() => chooseKind(option)}
+                className="rm-look rm-focus"
+              >
+                <span aria-hidden className="rm-look-number">
+                  {index + 1}
+                </span>
+                {lookLabel[option]}
+              </button>
+            ))}
+          </div>
+          <p className="rm-hint">{lookHint[kind]}</p>
           <p className="rm-credits">
             {t.roomsPicturesFrom}{" "}
             <a href="https://unsplash.com/?utm_source=WEJI&utm_medium=referral" target="_blank" rel="noopener noreferrer">

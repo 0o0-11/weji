@@ -31,6 +31,10 @@ export type PictureUniforms = {
   uImageAspect: { value: number };
   uHover: { value: number };
   uFade: { value: number };
+  /** 1 for a picture's mirror image on the floor. */
+  uReflection: { value: number };
+  /** How strongly far-away pictures go soft, like a camera's depth of field. */
+  uDepthBlur: { value: number };
 } & SharedUniforms;
 
 /**
@@ -83,6 +87,8 @@ const fragmentShader = /* glsl */ `
   uniform float uImageAspect;
   uniform float uHover;
   uniform float uFade;
+  uniform float uReflection;
+  uniform float uDepthBlur;
   uniform float uDim;
   uniform vec2 uFog;
   uniform float uGlobal;
@@ -114,7 +120,8 @@ const fragmentShader = /* glsl */ `
     uv += 0.5;
 
     vec3 space = backdrop(gl_FragCoord.xy);
-    vec3 picture = uHasMap > 0.5 ? texture2D(map, uv).rgb : uColor;
+    float softness = clamp((vDepth - uFog.x * 0.9) / 5.0, 0.0, 3.5) * uDepthBlur;
+    vec3 picture = uHasMap > 0.5 ? texture2D(map, uv, softness).rgb : uColor;
     float loaded = uHasMap * clamp((uTime - uLoadedAt) / 0.6, 0.0, 1.0);
     float sheen = smoothstep(0.12, 0.0, abs(fract(vUv.x * 0.7 + vUv.y * 0.3 - uTime * 0.35) - 0.5));
     vec3 waiting = mix(space, uColor, 0.4) + sheen * 0.025;
@@ -127,7 +134,10 @@ const fragmentShader = /* glsl */ `
     color = mix(color, space, smoothstep(uFog.x, uFog.y, vDepth));
 
     // A frame whose picture hasn't arrived yet is only a faint ghost.
-    gl_FragColor = vec4(color, mask * uFade * uGlobal * mix(0.18, 1.0, loaded));
+    float alpha = mask * uFade * uGlobal * mix(0.18, 1.0, loaded);
+    // A reflection shows only the picture's lower edge, fading into the floor.
+    if (uReflection > 0.5) alpha *= 0.2 * (1.0 - smoothstep(0.0, 0.42, vUv.y));
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
@@ -170,6 +180,8 @@ export function createPictureMaterial(shared: SharedUniforms, color: THREE.Color
     uImageAspect: { value: imageAspect },
     uHover: { value: 0 },
     uFade: { value: 1 },
+    uReflection: { value: 0 },
+    uDepthBlur: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({
     uniforms: uniforms as unknown as Record<string, THREE.IUniform>,
