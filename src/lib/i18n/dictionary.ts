@@ -145,6 +145,13 @@ export const STRINGS = {
     footerPhotosBy: "Photos provided by",
     footerAnd: "and",
     footerNewsNote: "News pictures belong to their publishers.",
+
+    // ── Bloom (design preview) ───────────────────────────────────────────
+    previewBadge: "Design preview",
+    bloomTagline: "Photos, art and today’s news — search in Arabic or English.",
+    bloomHint: "Drag to spin · Scroll to speed up · Tap a picture",
+    bloomBusy: "Blooming…",
+    bloomBackToLive: "Current WEJI",
   },
 
   ar: {
@@ -283,6 +290,13 @@ export const STRINGS = {
     footerPhotosBy: "الصور مقدمة من",
     footerAnd: "و",
     footerNewsNote: "صور الأخبار ملك لناشريها.",
+
+    // ── التفتّح (معاينة التصميم) ─────────────────────────────────────────
+    previewBadge: "معاينة التصميم",
+    bloomTagline: "صور وفن وأخبار اليوم — ابحث بالعربية أو الإنجليزية.",
+    bloomHint: "اسحب للتدوير · مرّر للتسريع · اضغط على صورة",
+    bloomBusy: "تتفتّح الصور…",
+    bloomBackToLive: "ويجي الحالي",
   },
 } as const;
 

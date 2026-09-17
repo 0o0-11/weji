@@ -1,0 +1,214 @@
+/*
+ * WEJI bloom — the typographic half of the identity.
+ *
+ * The wordmark is set in Readex Pro, whose HEXP axis lets letters physically
+ * widen. It opens from narrow to fully expanded as the pictures bloom behind
+ * it, so the type and the 3D move as one gesture rather than two effects.
+ * The Arabic name is set in Reem Kufi, a geometric Kufi that echoes the
+ * rosette's eight-fold geometry, and revealed right to left, the way it reads.
+ */
+
+.bloom {
+  --bloom-night: #07060d;
+  --bloom-mist: #f4f1ff;
+  --bloom-saffron: #ffb23f;
+  --bloom-coral: #ff5c7a;
+  --bloom-violet: #8b6cff;
+  --bloom-glass: rgba(20, 17, 34, 0.55);
+  --bloom-line: rgba(244, 241, 255, 0.14);
+  --bloom-gradient: linear-gradient(95deg, var(--bloom-saffron), var(--bloom-coral) 55%, var(--bloom-violet));
+
+  font-family: var(--font-readex), system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--bloom-mist);
+  background:
+    radial-gradient(60rem 40rem at 20% 15%, rgba(255, 178, 63, 0.14), transparent 60%),
+    radial-gradient(55rem 40rem at 85% 85%, rgba(139, 108, 255, 0.18), transparent 60%),
+    var(--bloom-night);
+}
+
+html[dir="rtl"] .bloom {
+  font-family: var(--font-readex), var(--font-kufi), "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ── Wordmark ─────────────────────────────────────────────────────────────── */
+
+.bloom-wordmark {
+  font-family: var(--font-readex), system-ui, sans-serif;
+  font-size: clamp(3.2rem, 11vw, 8.5rem);
+  line-height: 0.86;
+  letter-spacing: -0.015em;
+  font-variation-settings: "HEXP" 100, "wght" 700;
+  animation: bloom-expand 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  filter: drop-shadow(0 0 42px rgba(255, 140, 90, 0.22));
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.bloom-letter {
+  display: inline-block;
+  background-image: linear-gradient(
+    100deg,
+    var(--bloom-mist) 0%,
+    var(--bloom-mist) 38%,
+    #ffcf7a 46%,
+    var(--bloom-coral) 52%,
+    #b9a3ff 58%,
+    var(--bloom-mist) 66%,
+    var(--bloom-mist) 100%
+  );
+  background-size: 320% 100%;
+  background-position: 115% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    bloom-letter 0.95s cubic-bezier(0.16, 1, 0.3, 1) both,
+    bloom-shine 1.7s cubic-bezier(0.45, 0, 0.2, 1) both;
+  animation-delay: calc(0.3s + var(--i) * 0.09s), calc(2.05s + var(--i) * 0.11s);
+}
+
+.bloom-arabic {
+  font-family: var(--font-kufi), var(--font-readex), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 6.4vw, 4.4rem);
+  line-height: 1.25;
+  background-image: var(--bloom-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: bloom-reveal-rtl 1.3s cubic-bezier(0.16, 1, 0.3, 1) 1.05s both;
+}
+
+/* ── Entrances ────────────────────────────────────────────────────────────── */
+
+.bloom-rise {
+  animation: bloom-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0s);
+}
+
+/* The dark pool behind the centre copy that keeps it readable over pictures. */
+.bloom-scrim {
+  background: radial-gradient(closest-side, rgba(7, 6, 13, 0.72), rgba(7, 6, 13, 0.35) 60%, transparent);
+}
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+
+.bloom-search {
+  background: var(--bloom-glass);
+  border: 1px solid var(--bloom-line);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.bloom-search:focus-within {
+  border-color: rgba(255, 178, 63, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(255, 92, 122, 0.12),
+    0 18px 60px -20px rgba(139, 108, 255, 0.55);
+}
+
+.bloom-button {
+  background-image: var(--bloom-gradient);
+  color: #120b12;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.bloom-button:hover {
+  filter: brightness(1.08) saturate(1.1);
+  transform: translateY(-1px);
+}
+
+.bloom-chip {
+  background: rgba(20, 17, 34, 0.5);
+  border: 1px solid var(--bloom-line);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.bloom-chip:hover {
+  border-color: rgba(255, 178, 63, 0.5);
+  color: #ffd79b;
+  transform: translateY(-2px);
+}
+
+.bloom-chip[aria-pressed="true"] {
+  border-color: transparent;
+  background:
+    linear-gradient(rgba(20, 17, 34, 0.85), rgba(20, 17, 34, 0.85)) padding-box,
+    var(--bloom-gradient) border-box;
+  border: 1px solid transparent;
+  color: #fff;
+}
+
+.bloom-focus:focus-visible {
+  outline: 2px solid var(--bloom-saffron);
+  outline-offset: 3px;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+
+@keyframes bloom-expand {
+  from {
+    font-variation-settings: "HEXP" 0, "wght" 480;
+    letter-spacing: 0.06em;
+  }
+  to {
+    font-variation-settings: "HEXP" 100, "wght" 700;
+    letter-spacing: -0.015em;
+  }
+}
+
+@keyframes bloom-letter {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em) scale(0.9);
+    filter: blur(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes bloom-shine {
+  from {
+    background-position: 115% 0;
+  }
+  to {
+    background-position: -15% 0;
+  }
+}
+
+@keyframes bloom-reveal-rtl {
+  from {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0.3;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes bloom-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloom-wordmark,
+  .bloom-letter,
+  .bloom-arabic,
+  .bloom-rise {
+    animation: none;
+  }
+}
