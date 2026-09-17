@@ -146,12 +146,22 @@ export const STRINGS = {
     footerAnd: "and",
     footerNewsNote: "News pictures belong to their publishers.",
 
-    // ── Bloom (design preview) ───────────────────────────────────────────
+    // ── Star lattice (design preview) ────────────────────────────────────
     previewBadge: "Design preview",
-    bloomTagline: "Photos, art and today’s news — search in Arabic or English.",
-    bloomHint: "Drag to spin · Scroll to speed up · Tap a picture",
-    bloomBusy: "Blooming…",
-    bloomBackToLive: "Current WEJI",
+    latticeTagline: "Photos, art, anime and open-licence pictures — search in Arabic or English.",
+    latticeHint: "Scroll or drag to turn the room · Tap a picture to open it",
+    latticeBusy: "Searching…",
+    latticeBackToLive: "Current WEJI",
+    latticeTry: "Try",
+    latticePictures: "pictures",
+    latticeFrom: "from",
+    latticeNothing: "Nothing found for that. Try another word.",
+    latticeBlocked: "That search isn’t available. Try another one.",
+    latticeSeries: "From",
+    latticeLicence: "Licence",
+    latticeCopied: "Link copied",
+    latticeNoDownload: "Visit the original",
+    latticePicturesFrom: "Pictures from",
   },
 
   ar: {
@@ -293,10 +303,20 @@ export const STRINGS = {
 
     // ── التفتّح (معاينة التصميم) ─────────────────────────────────────────
     previewBadge: "معاينة التصميم",
-    bloomTagline: "صور وفن وأخبار اليوم — ابحث بالعربية أو الإنجليزية.",
-    bloomHint: "اسحب للتدوير · مرّر للتسريع · اضغط على صورة",
-    bloomBusy: "تتفتّح الصور…",
-    bloomBackToLive: "ويجي الحالي",
+    latticeTagline: "صور وفن وأنمي وصور مفتوحة الترخيص — ابحث بالعربية أو الإنجليزية.",
+    latticeHint: "مرّر أو اسحب لتدوير الغرفة · اضغط على صورة لفتحها",
+    latticeBusy: "نبحث…",
+    latticeBackToLive: "ويجي الحالي",
+    latticeTry: "جرّب",
+    latticePictures: "صورة",
+    latticeFrom: "من",
+    latticeNothing: "لم نجد شيئًا. جرّب كلمة أخرى.",
+    latticeBlocked: "هذا البحث غير متاح. جرّب بحثًا آخر.",
+    latticeSeries: "من",
+    latticeLicence: "الترخيص",
+    latticeCopied: "تم نسخ الرابط",
+    latticeNoDownload: "زيارة المصدر الأصلي",
+    latticePicturesFrom: "الصور من",
   },
 } as const;
 

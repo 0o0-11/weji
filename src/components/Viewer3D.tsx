@@ -183,6 +183,20 @@ export default function Viewer3D({ image, onClose }: Viewer3DProps) {
                 >
                   {image.sourceName}
                 </a>
+                {/* Open-licence pictures must name their licence too. */}
+                {image.license && (
+                  <>
+                    {" · "}
+                    <a
+                      href={image.licenseUrl ?? image.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted underline decoration-line-strong underline-offset-2 transition hover:text-gold"
+                    >
+                      {image.license}
+                    </a>
+                  </>
+                )}
               </>
             )}
             <span className="mx-2 hidden sm:inline">·</span>
