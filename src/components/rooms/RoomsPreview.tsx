@@ -36,7 +36,7 @@ const SOURCE_LABELS: Record<WejiImage["source"], string> = {
   news: "News",
 };
 
-const ROOMS: RoomKind[] = ["space", "wall", "tunnel"];
+const ROOMS: RoomKind[] = ["space", "tunnel", "spacetunnel"];
 
 /** How far to scroll for one full lap of a room. */
 const SCROLL_PER_TURN = 9000;
@@ -54,7 +54,7 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
   const [tier, setTier] = useState<DeviceTier | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [scroll, setScroll] = useState<ScrollDriver | null>(null);
-  const [room, setRoom] = useState<RoomKind>("space");
+  const [room, setRoom] = useState<RoomKind>("spacetunnel");
   const [images, setImages] = useState(initialImages);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [infoShown, setInfoShown] = useState(false);
@@ -70,7 +70,7 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     setTier(detectTier());
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const requested = new URLSearchParams(window.location.search).get("room");
-    if (requested === "wall" || requested === "tunnel" || requested === "space") setRoom(requested);
+    if (ROOMS.includes(requested as RoomKind)) setRoom(requested as RoomKind);
   }, []);
 
   const has3d = tier === "high" || tier === "low";
@@ -168,8 +168,8 @@ export default function RoomsPreview({ initialImages }: { initialImages: WejiIma
     return `${translated}${status.count} ${t.roomsPictures} · ${status.sources.join(" · ")}`;
   }, [status, t]);
 
-  const roomLabel: Record<RoomKind, string> = { space: t.roomSpace, wall: t.roomWall, tunnel: t.roomTunnel };
-  const roomHint: Record<RoomKind, string> = { space: t.roomSpaceHint, wall: t.roomWallHint, tunnel: t.roomTunnelHint };
+  const roomLabel: Record<RoomKind, string> = { space: t.roomSpace, tunnel: t.roomTunnel, spacetunnel: t.roomSpaceTunnel };
+  const roomHint: Record<RoomKind, string> = { space: t.roomSpaceHint, tunnel: t.roomTunnelHint, spacetunnel: t.roomSpaceTunnelHint };
 
   return (
     <div className="rm">

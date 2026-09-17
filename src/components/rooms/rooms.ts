@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { aspectOf, RoomScene, seeded, type RoomItem, type RoomOptions, type RoomPicture } from "./RoomScene";
+import { aspectOf, RoomScene, seeded, type RoomOptions, type RoomPicture } from "./RoomScene";
 
 /** Very wide banners and very tall posters get a calmer frame; the picture is cropped to fit it. */
 const frameAspect = (picture: RoomPicture) => THREE.MathUtils.clamp(aspectOf(picture), 0.62, 1.9);
@@ -86,106 +86,7 @@ export class SpaceRoom extends RoomScene {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Curved wall: you stand inside a round gallery of whole pictures in rows,
-//    and scrolling turns the wall around you.
-// ─────────────────────────────────────────────────────────────────────────────
-
-export class WallRoom extends RoomScene {
-  private static readonly RADIUS = 16;
-  private static readonly GAP = 0.18;
-  private rows = 3;
-  private rowHeight = 2.3;
-  private rotation = 0;
-  private look = 0;
-
-  constructor(host: HTMLElement, pictures: RoomPicture[], options: RoomOptions) {
-    super(host, pictures, options);
-    this.shared.uFog.value.set(30, 60);
-  }
-
-  protected capacity() {
-    return this.tier === "high" ? 130 : 90;
-  }
-
-  protected layout(pictures: RoomPicture[]) {
-    const R = WallRoom.RADIUS;
-    const gap = WallRoom.GAP;
-    const circumference = Math.PI * 2 * R;
-    const portrait = this.camera.aspect < 0.9;
-    this.rows = portrait ? 4 : 3;
-    this.rowHeight = portrait ? 2.0 : 2.3;
-
-    // Deal pictures into the shortest row until every row goes all the way round.
-    const rows: { picture: RoomPicture; index: number; width: number }[][] = Array.from({ length: this.rows }, () => []);
-    const lengths = new Array(this.rows).fill(0);
-    for (let index = 0; index < pictures.length; index++) {
-      const shortest = lengths.indexOf(Math.min(...lengths));
-      if (lengths[shortest] >= circumference) break;
-      const width = this.rowHeight * frameAspect(pictures[index]);
-      rows[shortest].push({ picture: pictures[index], index, width });
-      lengths[shortest] += width + gap;
-    }
-
-    rows.forEach((row, rowIndex) => {
-      if (row.length === 0) return;
-      // Stretch each row slightly so it closes into a seamless ring.
-      const stretch = (circumference - gap * row.length) / (lengths[rowIndex] - gap * row.length);
-      let along = rowIndex * 1.3; // stagger the rows like brickwork
-      const y = ((this.rows - 1) / 2 - rowIndex) * (this.rowHeight + gap);
-      for (const entry of row) {
-        const width = entry.width * stretch;
-        const theta = (along + width / 2) / R;
-        along += width + gap;
-
-        // Bend the picture to the curve of the wall.
-        const geometry = new THREE.PlaneGeometry(width, this.rowHeight, Math.max(2, Math.ceil(width / 0.3)), 1);
-        const positions = geometry.getAttribute("position") as THREE.BufferAttribute;
-        for (let i = 0; i < positions.count; i++) {
-          const x = positions.getX(i);
-          positions.setXYZ(i, R * Math.sin(x / R), positions.getY(i), R - R * Math.cos(x / R));
-        }
-        geometry.computeBoundingSphere();
-
-        const item = this.addItem(entry.index, entry.picture, geometry, width, this.rowHeight);
-        item.data.theta = theta;
-        item.mesh.position.set(R * Math.sin(theta), y, -R * Math.cos(theta));
-        item.mesh.rotation.y = -theta;
-      }
-    });
-  }
-
-  protected loadOrder() {
-    // Turning the room by r moves a picture from angle theta to theta - r.
-    const front = (item: RoomItem) => Math.abs(Math.atan2(Math.sin(item.data.theta - this.rotation), Math.cos(item.data.theta - this.rotation)));
-    return [...this.items].sort((a, b) => front(a) - front(b));
-  }
-
-  protected fitCamera(width: number, height: number) {
-    const R = WallRoom.RADIUS;
-    const cameraZ = R * 0.32;
-    const band = this.rows * (this.rowHeight + WallRoom.GAP);
-    const fill = width / height < 0.9 ? 0.66 : 0.74;
-    this.camera.position.set(0, 0, cameraZ);
-    this.camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(band / fill / 2 / (R + cameraZ)));
-  }
-
-  protected update(dt: number, frozen: boolean) {
-    if (frozen) return;
-    const radiansPerPixel = 0.0022;
-    // Scrolling down moves pictures to the left; dragging carries them with the pointer.
-    this.rotation += this.scrollDelta * Math.PI * 2;
-    this.rotation -= this.dragX * radiansPerPixel;
-    if (!this.reducedMotion && this.idleFor > 3) this.rotation += dt * 0.012 * Math.min(1, (this.idleFor - 3) / 2);
-    this.world.rotation.y = this.rotation;
-
-    const target = this.reducedMotion || !this.pointerInside ? 0 : this.pointerNdc.x;
-    this.look += (target - this.look) * (1 - Math.exp(-dt * 2));
-    this.camera.rotation.set(0, -this.look * 0.06, 0);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 3. Tunnel: pictures line the walls, floor and ceiling of a long corridor,
+// 2. Tunnel: pictures line the walls, floor and ceiling of a long corridor,
 //    and scrolling moves you through it.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -290,10 +191,116 @@ export class TunnelRoom extends RoomScene {
   }
 }
 
-export type RoomKind = "space" | "wall" | "tunnel";
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. Space tunnel: the two favourites together. Floating pictures wind round a
+//    slowly turning spiral that forms a curving tunnel you fly through. Each
+//    picture half-faces the traveller, so it reads clearly, and they stay
+//    close to the path, so they stay large.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export class SpaceTunnelRoom extends RoomScene {
+  private static readonly SPACING = 0.55;
+  private static readonly AHEAD = 4;
+  private depth = 1;
+  private travel = 0;
+  private spin = 0;
+  private perRing = 7;
+  private look = new THREE.Vector2();
+  private readonly basis = new THREE.Matrix4();
+
+  constructor(host: HTMLElement, pictures: RoomPicture[], options: RoomOptions) {
+    super(host, pictures, options);
+    this.shared.uFog.value.set(12, 42);
+  }
+
+  protected capacity() {
+    return this.tier === "high" ? 150 : 90;
+  }
+
+  protected layout(pictures: RoomPicture[]) {
+    const random = seeded(11);
+    const portrait = this.camera.aspect < 0.9;
+    this.perRing = portrait ? 5 : 6;
+    this.depth = Math.max(40, pictures.length * SpaceTunnelRoom.SPACING);
+    pictures.forEach((picture, index) => {
+      const aspect = frameAspect(picture);
+      const height = (portrait ? 1.7 : 2.1) * (0.9 + random() * 0.25);
+      const width = height * aspect;
+      const geometry = new THREE.PlaneGeometry(1, 1);
+      geometry.scale(width, height, 1);
+      const item = this.addItem(index, picture, geometry, width, height);
+      // A helix: each picture a step further round and a step further ahead.
+      item.data.angle = (index * Math.PI * 2) / this.perRing + (random() - 0.5) * 0.25;
+      item.data.radius = (portrait ? 2.4 : 3.8) + (random() - 0.5) * 0.8;
+      item.data.distance = index * SpaceTunnelRoom.SPACING;
+    });
+  }
+
+  protected loadOrder() {
+    return [...this.items];
+  }
+
+  protected fitCamera(width: number, height: number) {
+    this.camera.fov = width / height < 0.9 ? 76 : 62;
+  }
+
+  /** Where the winding tunnel's centre line is, a given distance along it. */
+  private path(distance: number) {
+    return new THREE.Vector2(Math.sin(distance * 0.045) * 2.4, Math.sin(distance * 0.07 + 1.3) * 1.1);
+  }
+
+  protected update(dt: number, frozen: boolean) {
+    const portrait = this.camera.aspect < 0.9;
+    if (!frozen) {
+      const step = this.scrollDelta * this.depth + (this.dragY - this.dragX) * 0.01;
+      this.travel += step;
+      if (!this.reducedMotion && this.idleFor > 2.5) this.travel += dt * 0.4 * Math.min(1, (this.idleFor - 2.5) / 2);
+      // The spiral turns slowly on its own, and a little faster as you fly.
+      if (!this.reducedMotion) this.spin += dt * 0.04 + step * 0.012;
+
+      const perSecond = dt > 0 ? Math.abs(step) / dt : 0;
+      this.speed += (Math.min(1, perSecond / 40) - this.speed) * (1 - Math.exp(-dt * 5));
+
+      // Look along the bend ahead, and a little toward the pointer.
+      const here = this.path(this.travel);
+      const ahead = this.path(this.travel + 12).sub(here);
+      const lean = this.reducedMotion || !this.pointerInside ? new THREE.Vector2() : this.pointerNdc;
+      this.look.lerp(lean, 1 - Math.exp(-dt * 2.5));
+      this.camera.rotation.set(Math.atan2(ahead.y, 12) * 0.6 + this.look.y * 0.08, -Math.atan2(ahead.x, 12) * 0.6 - this.look.x * 0.12, 0);
+      const fov = (portrait ? 76 : 62) + (this.reducedMotion ? 0 : this.speed * 10);
+      if (Math.abs(this.camera.fov - fov) > 0.01) {
+        this.camera.fov = fov;
+        this.camera.updateProjectionMatrix();
+      }
+    }
+
+    const here = this.path(this.travel);
+    const toViewer = new THREE.Vector3(0, 0, 1);
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const item of this.items) {
+      const ahead = THREE.MathUtils.euclideanModulo(item.data.distance - this.travel + SpaceTunnelRoom.AHEAD, this.depth);
+      const centre = this.path(this.travel + ahead).sub(here);
+      const angle = item.data.angle + this.spin;
+      const x = Math.cos(angle) * item.data.radius * (portrait ? 0.8 : 1.3);
+      const y = Math.sin(angle) * item.data.radius * (portrait ? 1.25 : 0.85);
+      item.mesh.position.set(centre.x + x, centre.y + y, -ahead + SpaceTunnelRoom.AHEAD);
+
+      // Half toward the tunnel's centre, half toward the traveller; always upright.
+      const normal = new THREE.Vector3(-x, -y, 0).normalize().multiplyScalar(0.42).addScaledVector(toViewer, 0.58).normalize();
+      const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+      const pictureUp = new THREE.Vector3().crossVectors(normal, right);
+      item.mesh.quaternion.setFromRotationMatrix(this.basis.makeBasis(right, pictureUp, normal));
+
+      const fade = THREE.MathUtils.smoothstep(ahead, 1.5, 5) * (1 - THREE.MathUtils.smoothstep(ahead, this.depth - 6, this.depth - 1));
+      if (!item.data.hidden) item.uniforms.uFade.value = fade;
+    }
+  }
+}
+
+export type RoomKind = "space" | "tunnel" | "spacetunnel";
 
 export function createRoom(kind: RoomKind, host: HTMLElement, pictures: RoomPicture[], options: RoomOptions): RoomScene {
-  if (kind === "wall") return new WallRoom(host, pictures, options);
   if (kind === "tunnel") return new TunnelRoom(host, pictures, options);
+  if (kind === "spacetunnel") return new SpaceTunnelRoom(host, pictures, options);
   return new SpaceRoom(host, pictures, options);
 }
