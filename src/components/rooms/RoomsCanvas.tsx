@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, type MutableRefObject } from "react";
+import type { Palette } from "./palettes";
 import type { RoomPicture, RoomScene, RoomTier, ScrollDriver } from "./RoomScene";
-import { createRoom, type RoomKind } from "./rooms";
+import { SpaceTunnelRoom } from "./rooms";
 
 export interface RoomControls {
   showResults: (pictures: RoomPicture[]) => void;
@@ -10,8 +11,8 @@ export interface RoomControls {
 }
 
 interface RoomsCanvasProps {
-  kind: RoomKind;
   pictures: RoomPicture[];
+  palette: Palette;
   tier: RoomTier;
   reducedMotion: boolean;
   scroll: ScrollDriver;
@@ -26,42 +27,52 @@ interface RoomsCanvasProps {
 }
 
 /**
- * Mounts one of the three.js rooms into a full-size box. Loaded only in the
- * browser, after the page has painted. Switching rooms builds the new one with
- * whatever pictures are showing.
+ * Mounts the three.js space tunnel into a full-size box. Loaded only in the
+ * browser, after the page has painted.
  */
-export default function RoomsCanvas({ kind, pictures, tier, reducedMotion, scroll, controls, onOpen, onClosing, onClosed }: RoomsCanvasProps) {
+export default function RoomsCanvas({ pictures, palette, tier, reducedMotion, scroll, controls, onOpen, onClosing, onClosed }: RoomsCanvasProps) {
   const host = useRef<HTMLDivElement>(null);
+  const room = useRef<RoomScene | null>(null);
 
-  // Latest callbacks and pictures, read by the room without rebuilding it.
+  // Latest callbacks, pictures and colours, read by the room without rebuilding it.
   const callbacks = useRef({ onOpen, onClosing, onClosed });
   callbacks.current = { onOpen, onClosing, onClosed };
   const latestPictures = useRef(pictures);
   latestPictures.current = pictures;
+  const latestPalette = useRef(palette);
+  latestPalette.current = palette;
 
   useEffect(() => {
     if (!host.current) return;
-    const room = createRoom(kind, host.current, latestPictures.current, {
+    const scene = new SpaceTunnelRoom(host.current, latestPictures.current, {
       tier,
       reducedMotion,
       scroll,
+      palette: latestPalette.current,
       onOpen: (index) => callbacks.current.onOpen(index),
       onClosing: () => callbacks.current.onClosing(),
       onClosed: () => callbacks.current.onClosed(),
     });
+    room.current = scene;
     controls.current = {
-      showResults: (next) => room.showResults(next),
-      close: () => room.close(),
+      showResults: (next) => scene.showResults(next),
+      close: () => scene.close(),
     };
     // Development only: lets automated checks drive the room.
     const debug = window as unknown as { __room?: RoomScene };
-    if (process.env.NODE_ENV === "development") debug.__room = room;
+    if (process.env.NODE_ENV === "development") debug.__room = scene;
     return () => {
       controls.current = null;
-      if (debug.__room === room) delete debug.__room;
-      room.dispose();
+      room.current = null;
+      if (debug.__room === scene) delete debug.__room;
+      scene.dispose();
     };
-  }, [kind, tier, reducedMotion, scroll, controls]);
+  }, [tier, reducedMotion, scroll, controls]);
+
+  // Changing colours recolours the room in place; nothing reloads.
+  useEffect(() => {
+    room.current?.setPalette(palette);
+  }, [palette]);
 
   return <div ref={host} className="absolute inset-0" />;
 }

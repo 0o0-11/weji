@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { createPictureMaterial, createShared, type PictureUniforms, type SharedUniforms } from "./material";
+import { createBackdrop, createPictureMaterial, createShared, type PictureUniforms, type SharedUniforms } from "./material";
+import type { Palette } from "./palettes";
 import { PictureLoader } from "./pictures";
 
 /**
@@ -30,6 +31,7 @@ export interface ScrollDriver {
 
 export interface RoomOptions {
   tier: RoomTier;
+  palette: Palette;
   reducedMotion: boolean;
   scroll: ScrollDriver | null;
   onOpen: (pictureIndex: number) => void;
@@ -48,7 +50,7 @@ export interface RoomItem {
   data: Record<string, number>;
 }
 
-type Phase = "idle" | "opening" | "open" | "closing";
+type Phase = "idle" | "searching" | "opening" | "open" | "closing";
 
 interface Tween {
   from: number;
@@ -62,8 +64,7 @@ interface Tween {
 
 export const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 export const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
-const BACKGROUND = new THREE.Color(0x09080e);
+export const easeInCubic = (t: number) => t * t * t;
 
 export function aspectOf(picture: RoomPicture) {
   return picture.width > 0 && picture.height > 0 ? picture.width / picture.height : 1.5;
@@ -106,6 +107,11 @@ export abstract class RoomScene {
   protected pointerInside = false;
   protected idleFor = 0;
   protected speed = 0;
+  /**
+   * Extra distance flown during a search: positive while the old pictures rush
+   * past, negative while the new ones are still arriving from far away.
+   */
+  protected warp = 0;
 
   private readonly loader: PictureLoader;
   private readonly raycaster = new THREE.Raycaster();
@@ -139,11 +145,10 @@ export abstract class RoomScene {
     const width = Math.max(1, host.clientWidth);
     const height = Math.max(1, host.clientHeight);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    this.renderer = new THREE.WebGLRenderer({ antialias: this.tier === "high", alpha: false, powerPreference: "high-performance" });
     this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.tier === "high" ? 2 : 1.5));
     this.renderer.setSize(width, height, false);
-    this.renderer.setClearColor(BACKGROUND, 1);
     const canvas = this.renderer.domElement;
     canvas.style.display = "block";
     canvas.style.width = "100%";
@@ -154,7 +159,9 @@ export abstract class RoomScene {
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 400);
     this.scene.add(this.world);
 
-    this.shared = createShared(BACKGROUND);
+    this.shared = createShared();
+    this.scene.add(createBackdrop(this.shared));
+    this.setPalette(options.palette);
     this.focusShared = { ...this.shared, uDim: { value: 0 }, uFog: { value: new THREE.Vector2(1e5, 1e5 + 1) } };
 
     this.loader = new PictureLoader(this.renderer, this.tier === "high" ? 640 : 384, (index, texture) => this.onTexture(index, texture));
@@ -193,14 +200,44 @@ export abstract class RoomScene {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  /** Swap in a new set of pictures: the room dims away and fills again. */
+  /**
+   * Swap in a new set of pictures: the old ones rush past you and fade, then
+   * the results fly in from the far end of the tunnel and settle.
+   */
   showResults(pictures: RoomPicture[]) {
     if (pictures.length === 0 || this.phase !== "idle") return;
-    const quick = this.reducedMotion;
-    this.tween(this.shared.uGlobal.value, 0, quick ? 0.01 : 0.35, easeOutCubic, (v) => (this.shared.uGlobal.value = v), () => {
+    if (this.reducedMotion) {
       this.setPictures(pictures);
-      this.tween(0, 1, quick ? 0.01 : 0.9, easeOutCubic, (v) => (this.shared.uGlobal.value = v));
+      return;
+    }
+    this.phase = "searching";
+    this.tween(0, 1, 0.55, easeInCubic, (v) => {
+      this.warp = v * 24;
+      this.shared.uGlobal.value = 1 - v * v;
+    }, () => {
+      this.setPictures(pictures);
+      this.tween(1, 0, 1.4, easeOutCubic, (v) => {
+        this.warp = -v * 36;
+        this.shared.uGlobal.value = 1 - v * v;
+      }, () => {
+        this.warp = 0;
+        this.phase = "idle";
+      });
     });
+  }
+
+  /** Recolour the space around the pictures. */
+  setPalette(palette: Palette) {
+    this.shared.uBg.value.set(palette.ink);
+    this.shared.uGlowA.value.set(palette.glowA);
+    this.shared.uGlowB.value.set(palette.glowB);
+    this.renderer.setClearColor(palette.ink, 1);
+    this.onPalette(palette);
+  }
+
+  /** Rooms with their own coloured parts (like dust) recolour them here. */
+  protected onPalette(palette: Palette) {
+    void palette;
   }
 
   close() {
@@ -521,13 +558,19 @@ export abstract class RoomScene {
 
     this.loader.upload(this.tier === "high" ? 4 : 2);
 
-    const frozen = this.phase !== "idle";
+    // Only an open picture stops the flight; a search keeps you moving.
+    const frozen = this.phase === "opening" || this.phase === "open" || this.phase === "closing";
     this.update(dt, frozen);
     this.dragX = 0;
     this.dragY = 0;
     this.world.updateMatrixWorld(true);
 
-    this.updateHover(dt, frozen);
+    // The glow sits at the far end of the tunnel, wherever the view points.
+    this.camera.updateMatrixWorld();
+    const farEnd = this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(60).add(this.camera.position).project(this.camera);
+    this.shared.uGlowCentre.value.set((farEnd.x + 1) / 2, (farEnd.y + 1) / 2);
+
+    this.updateHover(dt, frozen || this.phase === "searching");
     if (this.focus && this.phase !== "closing" && this.phase !== "opening") this.placeFocus(1);
 
     this.renderer.render(this.scene, this.camera);
@@ -564,5 +607,7 @@ export abstract class RoomScene {
     const headerShift = Math.min(56, height * 0.06);
     this.camera.setViewOffset(width, height, 0, -headerShift, width, height);
     this.camera.updateProjectionMatrix();
+    const ratio = this.renderer.getPixelRatio();
+    this.shared.uRes.value.set(Math.floor(width * ratio), Math.floor(height * ratio));
   }
 }
