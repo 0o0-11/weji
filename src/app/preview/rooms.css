@@ -1,0 +1,320 @@
+/*
+ * WEJI room demos — calm on purpose. The pictures bring the colour; the page
+ * around them is quiet ink with one warm accent for what is selected.
+ */
+
+.rm {
+  --rm-ink: #09080e;
+  --rm-mist: #f3f1f8;
+  --rm-accent: #ffb23f;
+  --rm-glass: rgba(16, 14, 24, 0.62);
+  --rm-line: rgba(243, 241, 248, 0.12);
+  --rm-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  font-family: var(--font-readex), system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--rm-mist);
+  background: var(--rm-ink);
+  min-height: 100svh;
+}
+
+.rm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.rm-overlay a,
+.rm-overlay button,
+.rm-overlay input {
+  pointer-events: auto;
+}
+
+.rm-header {
+  position: absolute;
+  inset: 0 0 auto;
+  padding: 0.9rem 1rem 2.2rem;
+  background: linear-gradient(to bottom, rgba(9, 8, 14, 0.92), rgba(9, 8, 14, 0.6) 65%, rgba(9, 8, 14, 0));
+}
+
+@media (min-width: 640px) {
+  .rm-header {
+    padding-inline: 1.75rem;
+  }
+}
+
+.rm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rm-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+/* ── Room switcher ────────────────────────────────────────────────────────── */
+
+.rm-switch {
+  display: flex;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--rm-glass);
+  border: 1px solid var(--rm-line);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.rm-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: rgba(243, 241, 248, 0.7);
+  transition:
+    background-color 0.3s var(--rm-out),
+    color 0.3s;
+}
+
+.rm-tab:hover {
+  color: var(--rm-mist);
+}
+
+.rm-tab[aria-selected="true"] {
+  color: #140f08;
+  background: var(--rm-accent);
+}
+
+.rm-tab-number {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(243, 241, 248, 0.12);
+}
+
+.rm-tab[aria-selected="true"] .rm-tab-number {
+  background: rgba(20, 15, 8, 0.15);
+}
+
+@media (max-width: 479px) {
+  .rm-tab {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.72rem;
+  }
+}
+
+/* ── Search ───────────────────────────────────────────────────────────────── */
+
+.rm-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(30rem, 100%);
+  padding: 0.3rem 0.3rem 0.3rem 1rem;
+  border-radius: 999px;
+  background: var(--rm-glass);
+  border: 1px solid var(--rm-line);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition: border-color 0.2s;
+}
+
+html[dir="rtl"] .rm-search {
+  padding: 0.3rem 1rem 0.3rem 0.3rem;
+}
+
+.rm-search:focus-within {
+  border-color: rgba(255, 178, 63, 0.5);
+}
+
+.rm-go {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #140f08;
+  background: var(--rm-accent);
+  transition: filter 0.2s;
+}
+
+.rm-go:hover {
+  filter: brightness(1.08);
+}
+
+.rm-go:disabled {
+  opacity: 0.75;
+}
+
+.rm-status {
+  min-height: 1rem;
+  font-size: 0.72rem;
+  color: rgba(243, 241, 248, 0.6);
+  text-align: center;
+}
+
+.rm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rm-mist);
+  background: var(--rm-glass);
+  border: 1px solid var(--rm-line);
+  transition: border-color 0.2s;
+}
+
+.rm-chip:hover {
+  border-color: rgba(255, 178, 63, 0.45);
+}
+
+.rm-chip.is-liked {
+  color: #ff8fb1;
+  border-color: rgba(255, 120, 160, 0.5);
+}
+
+.rm-focus:focus-visible {
+  outline: 2px solid var(--rm-accent);
+  outline-offset: 3px;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.rm-footer {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 2.5rem 1rem 0.9rem;
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(243, 241, 248, 0.7);
+  background: linear-gradient(to top, rgba(9, 8, 14, 0.9), rgba(9, 8, 14, 0));
+}
+
+.rm-credits {
+  font-size: 0.68rem;
+  color: rgba(243, 241, 248, 0.45);
+}
+
+.rm-credits a {
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
+  text-underline-offset: 2px;
+}
+
+.rm-overlay.is-open .rm-controls,
+.rm-overlay.is-open .rm-footer,
+.rm-overlay.is-open .rm-top > :not(:first-child) {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s,
+    visibility 0s 0.3s;
+}
+
+/* ── Opened picture ───────────────────────────────────────────────────────── */
+
+.rm-open {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.rm-close {
+  position: absolute;
+  top: 0.8rem;
+  inset-inline-end: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--rm-mist);
+  background: var(--rm-glass);
+  border: 1px solid var(--rm-line);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.rm-info {
+  position: absolute;
+  left: 50%;
+  bottom: 1.1rem;
+  width: min(54rem, calc(100vw - 1.5rem));
+  translate: -50% 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1.2rem;
+  padding: 0.8rem 1rem 0.8rem 1.2rem;
+  border-radius: 1.1rem;
+  background: rgba(14, 12, 20, 0.72);
+  border: 1px solid var(--rm-line);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    translate 0.4s var(--rm-out),
+    opacity 0.25s,
+    visibility 0s 0.25s;
+}
+
+.rm-open.is-shown .rm-close {
+  opacity: 1;
+  transition-delay: 0.6s;
+}
+
+.rm-open.is-shown .rm-info {
+  translate: -50% 0;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    translate 0.6s var(--rm-out) 0.65s,
+    opacity 0.4s 0.65s,
+    visibility 0s;
+}
+
+.rm-flat-photo {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  max-width: calc(100vw - 2rem);
+  max-height: 70svh;
+  translate: -50% -50%;
+  border-radius: 0.75rem;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rm-info,
+  .rm-close,
+  .rm-tab {
+    transition: none;
+  }
+}

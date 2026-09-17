@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { Readex_Pro } from "next/font/google";
-import LatticePreview from "@/components/lattice/LatticePreview";
+import RoomsPreview from "@/components/rooms/RoomsPreview";
 import { trendingAnime } from "@/lib/search/anime";
 import { curatedPexels, demoImages, hasKeys, interleave, popularUnsplash } from "@/lib/search/providers";
-import "./lattice.css";
+import "./rooms.css";
 
-// Readex Pro's HEXP axis lets the WEJI wordmark widen.
 const readex = Readex_Pro({
   subsets: ["arabic", "latin"],
-  axes: ["HEXP"],
   variable: "--font-readex",
   display: "swap",
 });
@@ -21,7 +19,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-/** A whole room of pictures: popular photos, curated photos and this season's anime. */
+/** Three room demos, filled with popular photos, curated photos and this season's anime. */
 export default async function PreviewPage() {
   let images = demoImages("weji-lattice", 1, 160);
   if (hasKeys()) {
@@ -38,7 +36,7 @@ export default async function PreviewPage() {
 
   return (
     <div className={readex.variable}>
-      <LatticePreview initialImages={images} />
+      <RoomsPreview initialImages={images} />
     </div>
   );
 }
