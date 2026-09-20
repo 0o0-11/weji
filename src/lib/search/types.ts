@@ -2,7 +2,7 @@
 export interface WejiImage {
   /** Stable id, namespaced by source so ids can never collide. */
   id: string;
-  source: "unsplash" | "pexels" | "news" | "demo";
+  source: "unsplash" | "pexels" | "news" | "demo" | "anime" | "openverse";
   /** Grid thumbnail. */
   thumb: string;
   /** Full-bleed version for the 3D viewer. */
@@ -36,6 +36,12 @@ export interface WejiImage {
    * so photographers' download counts stay accurate. Not a download URL itself.
    */
   downloadLocation?: string;
+  /**
+   * Open-licence pictures (Openverse) must show their licence next to the
+   * credit, e.g. "CC BY 2.0", linked to the licence text.
+   */
+  license?: string;
+  licenseUrl?: string;
   /** Present only on news pictures. */
   publishedAt?: string;
   outlet?: string;

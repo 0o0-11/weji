@@ -30,17 +30,19 @@ export default function DownloadMenu({ image }: { image: WejiImage }) {
     };
   }, [open]);
 
-  // News pictures are the publisher's, not ours to hand out as files.
+  // News pictures belong to their publisher, and anime and open-licence
+  // pictures to their creators: WEJI links to the original instead.
   if (!isDownloadable(image)) {
+    const isNews = image.source === "news";
     return (
       <a
-        href={image.articleUrl || image.creditUrl}
+        href={(isNews && image.articleUrl) || image.sourceUrl || image.creditUrl}
         target="_blank"
         rel="noopener noreferrer"
-        title={t.downloadNotAllowed}
+        title={isNews ? t.downloadNotAllowed : t.roomsNoDownload}
         className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-ink transition hover:bg-gold-deep"
       >
-        {t.viewerOpenArticle} ↗
+        {isNews ? t.viewerOpenArticle : t.roomsNoDownload} ↗
       </a>
     );
   }
