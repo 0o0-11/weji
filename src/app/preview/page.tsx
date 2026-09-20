@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Readex_Pro } from "next/font/google";
-import RoomsPreview from "@/components/rooms/RoomsPreview";
+import WejiPreview from "@/components/weji/WejiPreview";
 import { trendingAnime } from "@/lib/search/anime";
 import { curatedPexels, demoImages, hasKeys, interleave, popularUnsplash } from "@/lib/search/providers";
-import "./rooms.css";
+import "./weji.css";
 
 const readex = Readex_Pro({
   subsets: ["arabic", "latin"],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-/** Three room demos, filled with popular photos, curated photos and this season's anime. */
+/** The first screen of pictures: popular photos, curated photos and this season's anime. */
 export default async function PreviewPage() {
   let images = demoImages("weji-lattice", 1, 160);
   if (hasKeys()) {
@@ -36,7 +36,7 @@ export default async function PreviewPage() {
 
   return (
     <div className={readex.variable}>
-      <RoomsPreview initialImages={images} />
+      <WejiPreview initialImages={images} />
     </div>
   );
 }
